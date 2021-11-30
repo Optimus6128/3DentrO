@@ -2,16 +2,31 @@
 #include "tools.h"
 
 #include "part_spritesGecko.h"
+#include "part_intro.h"
 
-enum { PART_SPRITES_GECKO, PARTS_NUM };
+#include "sound.h"
 
-static void(*partInitFunc[PARTS_NUM])() = { partSpritesGeckoInit };
-static void(*partRunFunc[PARTS_NUM])() = { partSpritesGeckoRun };
+enum { PART_INTRO, PART_SPRITES_GECKO, PARTS_NUM };
+
+static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partSpritesGeckoInit };
+static void(*partRunFunc[PARTS_NUM])() = { partIntroRun, partSpritesGeckoRun };
+
+int partIndex = PART_INTRO;
+
+static void initParts()
+{
+	partInitFunc[partIndex]();
+
+	//startMusic("data/music.aiff");
+}
+
+static void runDemo()
+{
+	partRunFunc[partIndex]();
+}
 
 int main()
 {
-	const int partIndex = PART_SPRITES_GECKO;
-
-	coreInit(partInitFunc[partIndex], CORE_DEFAULT);
-	coreRun(partRunFunc[partIndex]);
+	coreInit(initParts, CORE_DEFAULT);
+	coreRun(runDemo);
 }

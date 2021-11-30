@@ -51,17 +51,16 @@ Sprite *newPackedSprite(int width, int height, int bpp, int type, uint16 *pal, u
 
 Sprite *loadSpriteCel(char *path)
 {
-	Sprite *spr;
-	CCB *tempCel;
-	int size;
+	Sprite *spr = (Sprite*)AllocMem(sizeof(Sprite), MEMTYPE_ANY);
 
-	tempCel = LoadCel(path, MEMTYPE_ANY);
-	spr = newSprite(tempCel->ccb_Width, tempCel->ccb_Height, 16, CREATECEL_UNCODED, NULL, NULL);
+	spr->cel = LoadCel(path, MEMTYPE_ANY);
+	
+	spr->width = spr->cel->ccb_Width;
+	spr->height = spr->cel->ccb_Height;
 
-	size = (tempCel->ccb_Width * tempCel->ccb_Height * 16) / 8;
-	memcpy(spr->cel->ccb_SourcePtr, tempCel->ccb_SourcePtr, size);
-
-	UnloadCel(tempCel);
+	spr->posX = spr->posY = 0;
+	spr->angle = 0;
+	spr->zoom = 256;
 
 	return spr;
 }
