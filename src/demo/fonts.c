@@ -30,7 +30,9 @@ TextSpritesList *generateTextCCBs(char *text)
 	TextSpritesList *textSprites = (TextSpritesList*)AllocMem(sizeof(TextSpritesList), MEMTYPE_ANY);
 	textSprites->numChars = strlen(text);
 
-	textSprites->chars = (Sprite**)AllocMem(sizeof(Sprite**) * textSprites->numChars, MEMTYPE_ANY);
+	textSprites->chars = (Sprite**)AllocMem(sizeof(Sprite*) * textSprites->numChars, MEMTYPE_ANY);
+	textSprites->startPos = (FontPos*)AllocMem(sizeof(FontPos) * textSprites->numChars, MEMTYPE_ANY);
+	textSprites->endPos = (FontPos*)AllocMem(sizeof(FontPos) * textSprites->numChars, MEMTYPE_ANY);
 
 	for (i=0; i<textSprites->numChars; ++i) {
 		int *dstPtr = (int*)fonts->ccb_SourcePtr;
@@ -46,6 +48,35 @@ TextSpritesList *generateTextCCBs(char *text)
 	}
 
 	return textSprites;
+}
+
+void setStartFontPos(int type, TextSpritesList* textSprites, int a, int aa)
+{
+	int i;
+	for (i=0; i<textSprites->numChars; ++i) {
+		const int ii = (32 * i) / (textSprites->numChars-1);
+		switch(type){
+			case FONTPOS_TYPE_SWIRL:
+			{
+				textSprites->startPos[i].posX = SCREEN_WIDTH/2 + ((CosF16(a<<16) * (320 + ii)) >> 16);
+				textSprites->startPos[i].posY = SCREEN_HEIGHT/2 + ((SinF16(a<<16) * (320 + ii)) >> 16);
+				textSprites->startPos[i].zoom = 2048;
+				textSprites->startPos[i].angle = 512 + 16*ii;
+			} break;
+		}
+		a += aa;
+	}
+}
+
+void setEndFontPos(int posX, int posY, TextSpritesList* textSprites)
+{
+	int i;
+	for (i=0; i<textSprites->numChars; ++i) {
+		textSprites->endPos[i].posX = posX + i * FONT_WIDTH;
+		textSprites->endPos[i].posY = posY;
+		textSprites->endPos[i].zoom = 256;
+		textSprites->endPos[i].angle = 0;
+	}
 }
 
 void initFonts()
