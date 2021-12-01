@@ -72,9 +72,9 @@ static unsigned char bitfonts[] = {0,0,0,0,0,0,0,0,
 static CCB *textCel[MAX_STRING_LENGTH];
 
 static char sbuffer[MAX_STRING_LENGTH+1];
-static uchar fontsBmp[NUM_FONTS * FONT_SIZE];
-static uint16 fontsPal[FONTS_PAL_SIZE];
-static uchar fontsMap[FONTS_MAP_SIZE];
+static uchar fontsBmp[NUM_TINY_FONTS * TINY_FONT_SIZE];
+static uint16 fontsPal[TINY_FONTS_PAL_SIZE];
+static uchar fontsMap[TINY_FONTS_MAP_SIZE];
 
 static bool fontsAreReady = false;
 
@@ -83,34 +83,34 @@ static CCB *selectionBarCel = NULL;
 static Item timerIOreq = -1;
 
 
-void initTimer()
+static void initTimer()
 {
 	if (timerIOreq < 0) {
 		timerIOreq = GetTimerIOReq();
 	}
 }
 
-void initFonts()
+static void initTinyFonts()
 {
 	int i = 0;
 	int n, x, y;
 
 	if (fontsAreReady) return;
 
-	for (n=0; n<FONTS_PAL_SIZE; ++n) {
+	for (n=0; n<TINY_FONTS_PAL_SIZE; ++n) {
 		fontsPal[n] = MakeRGB15(n, n, n);
 	}
 
-	for (n=0; n<NUM_FONTS; n++) {
-		for (y=0; y<FONT_HEIGHT; y++) {
+	for (n=0; n<NUM_TINY_FONTS; n++) {
+		for (y=0; y<TINY_FONT_HEIGHT; y++) {
 			int c = bitfonts[i++];
-			for (x=0; x<FONT_WIDTH; x++) {
-				fontsBmp[n * FONT_SIZE + x + y * FONT_WIDTH] = ((c >>  (7 - x)) & 1) * (FONTS_PAL_SIZE - 1);
+			for (x=0; x<TINY_FONT_WIDTH; x++) {
+				fontsBmp[n * TINY_FONT_SIZE + x + y * TINY_FONT_WIDTH] = ((c >>  (7 - x)) & 1) * (TINY_FONTS_PAL_SIZE - 1);
 			}
 		}
 	}
 
-	for (i=0; i<FONTS_MAP_SIZE; ++i) {
+	for (i=0; i<TINY_FONTS_MAP_SIZE; ++i) {
 		uchar c = i;
 
 		if (c>31 && c<92)
@@ -124,7 +124,7 @@ void initFonts()
 	}
 
 	for (i=0; i<MAX_STRING_LENGTH; ++i) {
-		textCel[i] = CreateCel(FONT_WIDTH, FONT_HEIGHT, 8, CREATECEL_CODED, fontsBmp);
+		textCel[i] = CreateCel(TINY_FONT_WIDTH, TINY_FONT_HEIGHT, 8, CREATECEL_CODED, fontsBmp);
 		textCel[i]->ccb_PLUTPtr = (PLUTChunk*)fontsPal;
 
 		textCel[i]->ccb_HDX = 1 << 20;
@@ -148,7 +148,7 @@ void setTextColor(uint16 color)
 void initTools()
 {
 	initTimer();
-	initFonts();
+	initTinyFonts();
 }
 
 void drawZoomedText(int xtp, int ytp, char *text, int zoom)
@@ -167,9 +167,9 @@ void drawZoomedText(int xtp, int ytp, char *text, int zoom)
 		textCel[i]->ccb_HDX = (zoom << 20) >> TEXT_ZOOM_SHR;
 		textCel[i]->ccb_VDY = (zoom << 16) >> TEXT_ZOOM_SHR;
 
-		textCel[i]->ccb_SourcePtr = (CelData*)&fontsBmp[c * FONT_SIZE];
+		textCel[i]->ccb_SourcePtr = (CelData*)&fontsBmp[c * TINY_FONT_SIZE];
 
-		xtp+= ((zoom * FONT_WIDTH) >> TEXT_ZOOM_SHR);
+		xtp+= ((zoom * TINY_FONT_WIDTH) >> TEXT_ZOOM_SHR);
 	} while(c!=255 && ++i < MAX_STRING_LENGTH);
 
 	--i;
@@ -283,9 +283,9 @@ int runEffectSelector(char **str, int size)
 
 	// Display menu once
 	for (i=0; i<size; ++i) {
-		drawText(px, py+i*FONT_WIDTH, str[i]);
+		drawText(px, py+i*TINY_FONT_WIDTH, str[i]);
 	}
-	renderEffectSelectorBar(px, py, strlen(str[selection])*FONT_WIDTH);
+	renderEffectSelectorBar(px, py, strlen(str[selection])*TINY_FONT_WIDTH);
 
 	do {
 		int moveOffset = 0;
@@ -309,9 +309,9 @@ int runEffectSelector(char **str, int size)
 		}
 
 		if (moveOffset!=0) {
-			renderEffectSelectorBar(px, py + selection*FONT_WIDTH, strlen(str[selection])*FONT_WIDTH);
+			renderEffectSelectorBar(px, py + selection*TINY_FONT_WIDTH, strlen(str[selection])*TINY_FONT_WIDTH);
 			selection += moveOffset;
-			renderEffectSelectorBar(px, py + selection*FONT_WIDTH, strlen(str[selection])*FONT_WIDTH);
+			renderEffectSelectorBar(px, py + selection*TINY_FONT_WIDTH, strlen(str[selection])*TINY_FONT_WIDTH);
 		}
 
 		displayScreen();
