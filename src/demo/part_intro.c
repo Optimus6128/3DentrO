@@ -11,21 +11,39 @@
 #include "sprite_engine.h"
 #include "fonts.h"
 
+static CCB *radialCel[8];
+static TextSpritesList *myText1;
 
-Sprite *radialSpr;
-CCB *skyCel;
-TextSpritesList *myText1;
+static uint16 radialPals[248];
+
+static void copyRadialPalsToCels()
+{
+	int i;
+	uint16 *src = radialPals;
+	for (i=0; i<8; ++i) {
+		uint16 *dst = (uint16*)radialCel[7-i]->ccb_PLUTPtr + 1;
+		memcpy(dst, src, 31*2);
+	}
+}
+
+static void animateRadialPals()
+{
+	int i;
+	for (i=0; i<248; ++i) {
+		radialPals[i] = getRand(0, 32767);
+	}
+}
 
 void partIntroInit()
 {
+	static char celFilename[17];
 	int i;
 
-	radialSpr = loadSpriteCel("data/radial.cel");
-	skyCel = LoadCel("data/sky1.cel", MEMTYPE_CEL);
-
-	skyCel->ccb_HDX = SCREEN_WIDTH << 20;
-	radialSpr->cel->ccb_PIXC = 0x1780;
-	//radialSpr->cel->ccb_PIXC = 0x0F80;
+	for (i=0; i<8; ++i) {
+		sprintf(celFilename, "data/radial%d.cel", 7-i);
+		radialCel[i] = LoadCel(celFilename, MEMTYPE_ANY);
+		if (i>0) LinkCel(radialCel[i-1], radialCel[i]);
+	}
 
 	myText1 = generateTextCCBs("3DO IS BACK!");
 
@@ -33,20 +51,18 @@ void partIntroInit()
 	setEndFontPos(SCREEN_WIDTH/2 - 96, SCREEN_HEIGHT/2 - 8, myText1);
 
 	for (i=0; i<myText1->numChars; ++i) {
-		FontPos *fpos = &myText1->startPos[i];
-		//FontPos *fpos = &myText1->endPos[i];
+		//FontPos *fpos = &myText1->startPos[i];
+		FontPos *fpos = &myText1->endPos[i];
 		setSpritePositionZoomRotate(myText1->chars[i], fpos->posX, fpos->posY, fpos->zoom, fpos->angle);
 	}
 }
 
 void partIntroRun()
 {
-	const int time = getFrameNum();
+	animateRadialPals();
+	copyRadialPalsToCels();
 
-	drawCels(skyCel);
-
-	setSpritePositionZoomRotate(radialSpr, SCREEN_WIDTH/8, SCREEN_HEIGHT/8, 256, time<<7);
-	drawSprite(radialSpr);
+	drawCels(radialCel[0]);
 
 	drawSprite(myText1->chars[0]);
 }
