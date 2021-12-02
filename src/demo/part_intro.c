@@ -81,10 +81,10 @@ void partIntroInit()
 	}
 	LinkCel(radialCel[3], radialCel[7]);
 
-	myText1 = generateTextCCBs("3DO IS BACK!");
+	myText1 = generateTextCCBs("3DOISBACK!");
 
-	setFontsAnimPos(FONTPOS_SWIRL, myText1, 0, 0, 0, 24, true);
-	setFontsAnimPos(FONTPOS_LINEAR, myText1, SCREEN_WIDTH/2 - 96, SCREEN_HEIGHT/2 - 8, 0, 0, false);
+	setFontsAnimPos(FONTPOS_ORIGIN, myText1, 0, 0, 0, 24, true);
+	setFontsAnimPos(FONTPOS_3DO, myText1, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0, 0, false);
 
 	for (i=0; i<8; ++i) {
 		const int c = i << 7;
@@ -98,9 +98,6 @@ void partIntroInit()
 
 	setPalGradient(0,15, 0,0,0, 31,31,31, fuckPal);
 	for (i=0; i<myText1->numChars; ++i) {
-		//FontPos *fpos = &myText1->startPos[i];
-		FontPos *fpos = &myText1->endPos[i];
-		setSpritePositionZoomRotate(myText1->chars[i], fpos->posX, fpos->posY, fpos->zoom, fpos->angle);
 		myText1->chars[i]->cel->ccb_PLUTPtr = fuckPal;
 	}
 
@@ -109,6 +106,11 @@ void partIntroInit()
 
 static void textAnimScript(int t)
 {
+	if (t > 500 && t < 2000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(500, 2000, t));
+	}
+	
+	if (t > 500) drawSprite(myText1->chars[0]);
 }
 
 void partIntroRun(int ticks)
@@ -121,5 +123,4 @@ void partIntroRun(int ticks)
 	drawCels(radialCel[0]);
 
 	textAnimScript(ticks);
-	drawSprite(myText1->chars[0]);
 }

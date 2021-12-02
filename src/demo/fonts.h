@@ -27,5 +27,7 @@ void initFonts(void);
 TextSpritesList *generateTextCCBs(char *text);
 
 void setFontsAnimPos(int type, TextSpritesList* textSprites, int posX, int posY, int angleStart, int angleInc, bool isStart);
+void updateFontAnimPos(TextSpritesList* textSprites, int timeF16);
+int getAnimIntervalF16(int t0, int t1, int t);
 
 #endif

@@ -57,8 +57,8 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 		{
 			fPos->posX = SCREEN_WIDTH/2;
 			fPos->posY = SCREEN_HEIGHT/2;
-			fPos->zoom = 1;
-			fPos->angle = 0;
+			fPos->zoom = 1 - i * 64;
+			fPos->angle = i * i * 256;
 		} break;
 
 		case FONTPOS_LINEAR:
@@ -71,10 +71,22 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 		
 		case FONTPOS_3DO:
 		{
-			fPos->posX = posX + i * FONT_WIDTH;
-			fPos->posY = posY;
-			fPos->zoom = 256;
+			fPos->zoom = 384;
 			fPos->angle = 0;
+			if (i < 3) {
+				fPos->posX = posX + (i-1) * FONT_WIDTH * 1.75 + 4;
+				fPos->posY = posY - 48 - 8 * (i&1);
+				fPos->angle = (1-i) * 1024;
+			} else if (i < 5) {
+				fPos->posX = posX + (i-4) * FONT_WIDTH * 1.75 + 16;
+				fPos->posY = posY;
+			} else {
+				fPos->posX = posX + (i-7) * FONT_WIDTH * 1.75 + 8;
+				fPos->posY = posY + 48;
+				if (i==5 || i==9) {fPos->posY -=8;}
+				if (i==6 || i==8) {fPos->posY -=4;}
+				fPos->angle = (i-7) * 1024;
+			}
 		} break;
 
 		case FONTPOS_SWIRL:
@@ -84,6 +96,34 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 			fPos->zoom = 2048;
 			fPos->angle = 512 + 16 * perc;
 		} break;
+	}
+}
+
+static int interpolateValue(int x0, int x1, int timeF16)
+{
+	return (x0 * (65536 - timeF16) + x1 * timeF16) >> 16;
+}
+
+int getAnimIntervalF16(int t0, int t1, int t)
+{
+	return ((t-t0) << 16) / (t1-t0);
+}
+
+void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
+{
+	int i;
+	FontPos fp;
+
+	for (i=0; i<textSprites->numChars; ++i) {
+		FontPos *fpStart = &textSprites->startPos[i];
+		FontPos *fpEnd = &textSprites->endPos[i];
+
+		fp.posX = interpolateValue(fpStart->posX, fpEnd->posX, timeF16);
+		fp.posY = interpolateValue(fpStart->posY, fpEnd->posY, timeF16);
+		fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, timeF16);
+		fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, timeF16);
+
+		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
 	}
 }
 
