@@ -94,10 +94,10 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 
 		case FONTPOS_SWIRL:
 		{
-			fPos->posX = SCREEN_WIDTH/2 + ((CosF16(angle<<16) * (320 + perc)) >> 16);
-			fPos->posY = SCREEN_HEIGHT/2 + ((SinF16(angle<<16) * (320 + perc)) >> 16);
-			fPos->zoom = 2048;
-			fPos->angle = 512 + 16 * perc;
+			fPos->posX = SCREEN_WIDTH/2 + ((CosF16(angle<<16) * (512 + perc)) >> 16);
+			fPos->posY = SCREEN_HEIGHT/2 + ((SinF16(angle<<16) * (512 + perc)) >> 16);
+			fPos->zoom = 1536;
+			fPos->angle = -65536 - 256 * perc;
 		} break;
 	}
 }

@@ -31,17 +31,22 @@ static void copyRadialPalsToCels()
 	}
 }
 
-static void animateRadialPals(int t)
+static void animateRadialPals(int t, int fadeShift)
 {
 	int i,j,n=0,k=0;
+
 	for (j=0; j<4; ++j) {
 		for (i=1; i<32; ++i) {
 			const int tt1 = k + t;
 			const int tt2 = 2*k - t;
 			const int tt3 = 3*k + t;
 			const int tt4 = 5*k - 2*t;
-			int ii = t + (SinF16(tt1<<14) >> 8) + (CosF16(tt2<<15) >> 9) + (SinF16(tt3<<16) >> 10) + (CosF16(tt4<<17) >> 11);
-			radialPals[n+i] = palsAnim[ii & 1023];
+			const int ii = t + (SinF16(tt1<<14) >> 8) + (CosF16(tt2<<15) >> 9) + (SinF16(tt3<<16) >> 10) + (CosF16(tt4<<17) >> 11);
+			const uint16 palVal = palsAnim[ii & 1023];
+			const int r = ((palVal >> 10) & 31) >> fadeShift;
+			const int g = ((palVal >> 5) & 31) >> fadeShift;
+			const int b = (palVal & 31) >> fadeShift;
+			radialPals[n+i] = (r << 10) | (g << 5) | b;
 			++k;
 		}
 		n+=32;
@@ -62,6 +67,7 @@ void partIntroInit()
 	for (i=0; i<8; ++i) {
 		sprintf(celFilename, "data/radial%d.cel", i);
 		radialCel[i] = LoadCel(celFilename, MEMTYPE_ANY);
+		if (i>0) LinkCel(radialCel[i-1], radialCel[i]);
 	}
 
 	for (i = 0; i < 8; ++i) {
@@ -75,11 +81,15 @@ void partIntroInit()
 	}
 
 	// Unorthodox link order hack in the hope of covering some black buggy pixels from the packer (that I can't fix now because of the deadline)
-	for (i=1; i<4; ++i) {
+	// Commented out. There are few black pixels that didn't register as transparent in the packer (maybe at the edges before the end of line or something)
+	// But when I disabled CCB_BGND (it works the other way around, clean it to HAVE background, enable it to ERASE background, wtf?)
+	// Also NOBLK works opposite of what it's name means. Set it on to get absolute 0,0,0 black.
+	// I keep this code as I will have to go back to the packer and see what's wrong. The star has also an ugly black pattern that should also be transparent.
+	/*for (i=1; i<4; ++i) {
 		LinkCel(radialCel[i-1], radialCel[i]);
 		LinkCel(radialCel[8-i], radialCel[7-i]);
 	}
-	LinkCel(radialCel[3], radialCel[7]);
+	LinkCel(radialCel[3], radialCel[7]);*/
 
 	myText1 = generateTextCCBs("3DOISBACK!");
 
@@ -104,20 +114,36 @@ void partIntroInit()
 	isIntroInit = true;
 }
 
+static int fadeOutVal = 1;
+
 static void textAnimScript(int t)
 {
-	if (t > 500 && t < 3000) {
-		updateFontAnimPos(myText1, getAnimIntervalF16(500, 3000, t));
+	static bool initSecondAnim = false;
+
+	if (t > 3000 && t < 7000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(3000, 7000, t));
 	}
-	
-	if (t > 500) drawSprite(myText1->chars[0]);
+
+	if (!initSecondAnim && t > 7000) {
+		setFontsAnimPos(FONTPOS_3DO, myText1, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0, 0, true);
+		setFontsAnimPos(FONTPOS_SWIRL, myText1, 0, 0, 0, 32, false);
+		initSecondAnim = true;
+	}
+
+	if (t > 15000 && t < 23000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(15000, 23000, t));
+	}
+
+	if (t > 3000 && t < 23000) drawSprite(myText1->chars[0]);
+
+	if (t > 23000 & t < 25000) {
+		fadeOutVal = (t - 23000) >> 8;
+	}
 }
 
 void partIntroRun(int ticks)
 {
-	const int time = ticks >> 4;
-
-	animateRadialPals(time);
+	animateRadialPals(ticks >> 4, fadeOutVal);
 	copyRadialPalsToCels();
 
 	drawCels(radialCel[0]);

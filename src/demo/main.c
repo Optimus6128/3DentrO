@@ -15,7 +15,7 @@ enum { PART_INTRO, PART_CREDITS, PART_SPRITES_GECKO, PARTS_NUM };
 static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partCreditsInit, partSpritesGeckoInit };
 static void(*partRunFunc[PARTS_NUM])(int) = { partIntroRun, partCreditsRun, partSpritesGeckoRun };
 
-int partIndex = PART_INTRO;
+int partIndex = PART_CREDITS;
 
 int startPartTicks = -1;
 static void(*currentPartRunFunc)(int);
@@ -55,9 +55,9 @@ static void runDemo()
 
 	currentPartRunFunc(dt);
 
-	if (partIndex==PART_INTRO && dt > 12000) {
+	if (partIndex==PART_INTRO && dt > 25000) {
 		switchPart(PART_CREDITS);
-	} else if (partIndex==PART_CREDITS && dt > 12000) {
+	} else if (partIndex==PART_CREDITS && dt > 25000) {
 		switchPart(PART_SPRITES_GECKO);
 	}
 }
