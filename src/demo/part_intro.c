@@ -20,11 +20,13 @@ static uint16 palsAnim[1024];
 
 static uint16 fuckPal[16];
 
+static bool isIntroInit = false;
+
+
 static void copyRadialPalsToCels()
 {
 	int i;
 	for (i=0; i<8; ++i) {
-		//radialCel[7-i]->ccb_PLUTPtr = &radialPals[i<<5];
 		radialCel[i]->ccb_PLUTPtr = &radialPals[i<<5];
 	}
 }
@@ -55,17 +57,34 @@ void partIntroInit()
 	static char celFilename[17];
 	int i;
 
+	if (isIntroInit) return;
+
 	for (i=0; i<8; ++i) {
-		//sprintf(celFilename, "data/radial%d.cel", 7-i);
 		sprintf(celFilename, "data/radial%d.cel", i);
 		radialCel[i] = LoadCel(celFilename, MEMTYPE_ANY);
-		if (i>0) LinkCel(radialCel[i-1], radialCel[i]);
 	}
+
+	for (i = 0; i < 8; ++i) {
+		const int q = i >> 1;
+		const int yp = q >> 1;
+		int xp = q;
+		if (xp > 1) xp = 3 - xp;
+
+		radialCel[i]->ccb_XPos = (xp * SCREEN_WIDTH / 2) << 16;
+		radialCel[i]->ccb_YPos = (yp * SCREEN_HEIGHT / 2) << 16;
+	}
+
+	// Unorthodox link order hack in the hope of covering some black buggy pixels from the packer (that I can't fix now because of the deadline)
+	for (i=1; i<4; ++i) {
+		LinkCel(radialCel[i-1], radialCel[i]);
+		LinkCel(radialCel[8-i], radialCel[7-i]);
+	}
+	LinkCel(radialCel[3], radialCel[7]);
 
 	myText1 = generateTextCCBs("3DO IS BACK!");
 
-	setStartFontPos(FONTPOS_TYPE_SWIRL, myText1, 0, 24);
-	setEndFontPos(SCREEN_WIDTH/2 - 96, SCREEN_HEIGHT/2 - 8, myText1);
+	setFontsAnimPos(FONTPOS_SWIRL, myText1, 0, 0, 0, 24, true);
+	setFontsAnimPos(FONTPOS_LINEAR, myText1, SCREEN_WIDTH/2 - 96, SCREEN_HEIGHT/2 - 8, 0, 0, false);
 
 	for (i=0; i<8; ++i) {
 		const int c = i << 7;
@@ -84,16 +103,23 @@ void partIntroInit()
 		setSpritePositionZoomRotate(myText1->chars[i], fpos->posX, fpos->posY, fpos->zoom, fpos->angle);
 		myText1->chars[i]->cel->ccb_PLUTPtr = fuckPal;
 	}
+
+	isIntroInit = true;
 }
 
-void partIntroRun()
+static void textAnimScript(int t)
 {
-	const int time = getFrameNum();
+}
+
+void partIntroRun(int ticks)
+{
+	const int time = ticks >> 4;
 
 	animateRadialPals(time);
 	copyRadialPalsToCels();
 
 	drawCels(radialCel[0]);
 
+	textAnimScript(ticks);
 	drawSprite(myText1->chars[0]);
 }

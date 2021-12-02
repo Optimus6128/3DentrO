@@ -4,7 +4,7 @@
 #include "graphics.h"
 #include "sprite_engine.h"
 
-enum { FONTPOS_TYPE_SWIRL };
+enum { FONTPOS_ORIGIN, FONTPOS_LINEAR, FONTPOS_3DO, FONTPOS_SWIRL };
 
 typedef struct FontPos
 {
@@ -26,7 +26,6 @@ void initFonts(void);
 
 TextSpritesList *generateTextCCBs(char *text);
 
-void setStartFontPos(int type, TextSpritesList* textSprites, int a, int aa);
-void setEndFontPos(int posX, int posY, TextSpritesList* textSprites);
+void setFontsAnimPos(int type, TextSpritesList* textSprites, int posX, int posY, int angleStart, int angleInc, bool isStart);
 
 #endif

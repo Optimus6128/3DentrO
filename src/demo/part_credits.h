@@ -2,6 +2,6 @@
 #define PART_CREDITS_H
 
 void partCreditsInit(void);
-void partCreditsRun(void);
+void partCreditsRun(int ticks);
 
 #endif

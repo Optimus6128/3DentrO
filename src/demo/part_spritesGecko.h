@@ -2,6 +2,6 @@
 #define PART_SPRITES_GECKO_H
 
 void partSpritesGeckoInit(void);
-void partSpritesGeckoRun(void);
+void partSpritesGeckoRun(int ticks);
 
 #endif

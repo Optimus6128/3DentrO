@@ -12,41 +12,37 @@
 #include "fonts.h"
 
 
-Sprite *radialSpr;
-CCB *skyCel;
-TextSpritesList *myText1;
+static Sprite *radialSpr;
+static CCB *skyCel;
+static Sprite *star8;
+
+static bool isCreditsInit = false;
+
 
 void partCreditsInit()
 {
-	int i;
+	if (isCreditsInit) return;
 
 	radialSpr = loadSpriteCel("data/radial.cel");
 	skyCel = LoadCel("data/sky1.cel", MEMTYPE_CEL);
+	star8 = loadSpriteCel("data/star8.cel");
 
 	skyCel->ccb_HDX = SCREEN_WIDTH << 20;
 	radialSpr->cel->ccb_PIXC = 0x1780;
 	//radialSpr->cel->ccb_PIXC = 0x0F80;
+	
+	star8->cel->ccb_PIXC = 0x1F80;
 
-	myText1 = generateTextCCBs("3DO IS BACK!");
-
-	setStartFontPos(FONTPOS_TYPE_SWIRL, myText1, 0, 24);
-	setEndFontPos(SCREEN_WIDTH/2 - 96, SCREEN_HEIGHT/2 - 8, myText1);
-
-	for (i=0; i<myText1->numChars; ++i) {
-		FontPos *fpos = &myText1->startPos[i];
-		//FontPos *fpos = &myText1->endPos[i];
-		setSpritePositionZoomRotate(myText1->chars[i], fpos->posX, fpos->posY, fpos->zoom, fpos->angle);
-	}
+	isCreditsInit = true;
 }
 
-void partCreditsRun()
+void partCreditsRun(int ticks)
 {
-	const int time = getFrameNum();
-
 	drawCels(skyCel);
 
-	setSpritePositionZoomRotate(radialSpr, SCREEN_WIDTH/8, SCREEN_HEIGHT/8, 256, time<<7);
+	setSpritePositionZoomRotate(radialSpr, SCREEN_WIDTH/8, SCREEN_HEIGHT/8, 256, ticks<<3);
 	drawSprite(radialSpr);
 
-	drawSprite(myText1->chars[0]);
+	setSpritePositionZoomRotate(star8, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 256, ticks<<4);
+	drawSprite(star8);
 }

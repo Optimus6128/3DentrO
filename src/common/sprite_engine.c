@@ -1,5 +1,4 @@
 #include "sprite_engine.h"
-#include "cel_packer.h"
 #include "system_graphics.h"
 #include "tools.h"
 
@@ -33,27 +32,12 @@ Sprite *newFeedbackSprite(int posX, int posY, int width, int height, int bufferI
 	return spr;
 }
 
-Sprite *newPackedSprite(int width, int height, int bpp, int type, uint16 *pal, ubyte *unpackedBmp, ubyte *packedData, int transparentColor)
-{
-	Sprite *spr;
-	ubyte *providedPackedData = packedData;
-
-	if (type == CREATECEL_CODED && !pal) return NULL;   // need palette to know when creating the packed sprite, which indexed color is transparent
-
-	if (!providedPackedData) providedPackedData = createPackedDataFromUnpackedBmp(width, height, bpp, type, pal, unpackedBmp, transparentColor);
-
-	spr = newSprite(width, height, bpp, type, pal, providedPackedData);
-
-	spr->cel->ccb_Flags |= CCB_PACKED;
-
-	return spr;
-}
-
 Sprite *loadSpriteCel(char *path)
 {
 	Sprite *spr = (Sprite*)AllocMem(sizeof(Sprite), MEMTYPE_ANY);
 
 	spr->cel = LoadCel(path, MEMTYPE_ANY);
+	spr->cel->ccb_Flags |= (CCB_ACSC | CCB_ALSC);
 	
 	spr->width = spr->cel->ccb_Width;
 	spr->height = spr->cel->ccb_Height;

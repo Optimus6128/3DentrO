@@ -50,32 +50,56 @@ TextSpritesList *generateTextCCBs(char *text)
 	return textSprites;
 }
 
-void setStartFontPos(int type, TextSpritesList* textSprites, int a, int aa)
+static void setPositionStyle(int type, int i, int perc, int posX, int posY, int angle, FontPos *fPos)
 {
-	int i;
-	for (i=0; i<textSprites->numChars; ++i) {
-		const int ii = (32 * i) / (textSprites->numChars-1);
-		switch(type){
-			case FONTPOS_TYPE_SWIRL:
-			{
-				textSprites->startPos[i].posX = SCREEN_WIDTH/2 + ((CosF16(a<<16) * (320 + ii)) >> 16);
-				textSprites->startPos[i].posY = SCREEN_HEIGHT/2 + ((SinF16(a<<16) * (320 + ii)) >> 16);
-				textSprites->startPos[i].zoom = 2048;
-				textSprites->startPos[i].angle = 512 + 16*ii;
-			} break;
-		}
-		a += aa;
+	switch(type) {
+		case FONTPOS_ORIGIN:
+		{
+			fPos->posX = SCREEN_WIDTH/2;
+			fPos->posY = SCREEN_HEIGHT/2;
+			fPos->zoom = 1;
+			fPos->angle = 0;
+		} break;
+
+		case FONTPOS_LINEAR:
+		{
+			fPos->posX = posX + i * FONT_WIDTH;
+			fPos->posY = posY;
+			fPos->zoom = 256;
+			fPos->angle = 0;
+		} break;
+		
+		case FONTPOS_3DO:
+		{
+			fPos->posX = posX + i * FONT_WIDTH;
+			fPos->posY = posY;
+			fPos->zoom = 256;
+			fPos->angle = 0;
+		} break;
+
+		case FONTPOS_SWIRL:
+		{
+			fPos->posX = SCREEN_WIDTH/2 + ((CosF16(angle<<16) * (320 + perc)) >> 16);
+			fPos->posY = SCREEN_HEIGHT/2 + ((SinF16(angle<<16) * (320 + perc)) >> 16);
+			fPos->zoom = 2048;
+			fPos->angle = 512 + 16 * perc;
+		} break;
 	}
 }
 
-void setEndFontPos(int posX, int posY, TextSpritesList* textSprites)
+void setFontsAnimPos(int type, TextSpritesList* textSprites, int posX, int posY, int angleStart, int angleInc, bool isStart)
 {
 	int i;
 	for (i=0; i<textSprites->numChars; ++i) {
-		textSprites->endPos[i].posX = posX + i * FONT_WIDTH;
-		textSprites->endPos[i].posY = posY;
-		textSprites->endPos[i].zoom = 256;
-		textSprites->endPos[i].angle = 0;
+		const int perc = (32 * i) / (textSprites->numChars-1);
+
+		FontPos *fPos = &textSprites->startPos[i];
+		if (!isStart) {
+			fPos = &textSprites->endPos[i];
+		}
+		setPositionStyle(type, i, perc, posX, posY, angleStart, fPos);
+
+		angleStart += angleInc;
 	}
 }
 

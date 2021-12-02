@@ -21,7 +21,6 @@ typedef struct Sprite
 
 
 Sprite *newSprite(int width, int height, int bpp, int type, uint16 *pal, ubyte *bmp);
-Sprite *newPackedSprite(int width, int height, int bpp, int type, uint16 *pal, ubyte *unpackedBmp, ubyte *packedData, int transparentColor);
 Sprite *newFeedbackSprite(int posX, int posY, int width, int height, int bufferIndex);
 Sprite *loadSpriteCel(char *path);
 
