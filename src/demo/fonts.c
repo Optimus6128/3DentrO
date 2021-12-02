@@ -43,6 +43,9 @@ TextSpritesList *generateTextCCBs(char *text)
 		textSprites->chars[i]->cel->ccb_PRE1 = (textSprites->chars[i]->cel->ccb_PRE1 & ~PRE1_WOFFSET8_MASK) | (((fonts->ccb_Width >> 3) - 2) << PRE1_WOFFSET8_SHIFT);
 		textSprites->chars[i]->cel->ccb_SourcePtr = (CelData*)dstPtr;
 
+		textSprites->startPos[i].animSpeedF8 = 256;
+		textSprites->endPos[i].animSpeedF8 = 256;
+
 		if (i>0) LinkCel(textSprites->chars[i-1]->cel, textSprites->chars[i]->cel);
 		if (fontOff==0) textSprites->chars[i]->cel->ccb_Flags |= CCB_SKIP;
 	}
@@ -57,8 +60,8 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 		{
 			fPos->posX = SCREEN_WIDTH/2;
 			fPos->posY = SCREEN_HEIGHT/2;
-			fPos->zoom = 1 - i * 64;
-			fPos->angle = i * i * 256;
+			fPos->zoom = 1 - i * 128;
+			fPos->angle = (i+1) * 32768;
 		} break;
 
 		case FONTPOS_LINEAR:
@@ -117,11 +120,13 @@ void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
 	for (i=0; i<textSprites->numChars; ++i) {
 		FontPos *fpStart = &textSprites->startPos[i];
 		FontPos *fpEnd = &textSprites->endPos[i];
+		int newTimeF16 = (timeF16 * textSprites->endPos[i].animSpeedF8) >> 8;
+		if (newTimeF16 > 65536) newTimeF16 = 65536;
 
-		fp.posX = interpolateValue(fpStart->posX, fpEnd->posX, timeF16);
-		fp.posY = interpolateValue(fpStart->posY, fpEnd->posY, timeF16);
-		fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, timeF16);
-		fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, timeF16);
+		fp.posX = interpolateValue(fpStart->posX, fpEnd->posX, newTimeF16);
+		fp.posY = interpolateValue(fpStart->posY, fpEnd->posY, newTimeF16);
+		fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, newTimeF16);
+		fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, newTimeF16);
 
 		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
 	}
@@ -138,6 +143,8 @@ void setFontsAnimPos(int type, TextSpritesList* textSprites, int posX, int posY,
 			fPos = &textSprites->endPos[i];
 		}
 		setPositionStyle(type, i, perc, posX, posY, angleStart, fPos);
+
+		textSprites->endPos[i].animSpeedF8 = 1280 - (perc << 5);
 
 		angleStart += angleInc;
 	}

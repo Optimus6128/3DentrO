@@ -11,6 +11,7 @@ typedef struct FontPos
 	int posX, posY;
 	int zoom;
 	int angle;
+	int animSpeedF8;
 }FontPos;
 
 typedef struct TextSpritesList

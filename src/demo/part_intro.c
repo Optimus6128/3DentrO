@@ -106,8 +106,8 @@ void partIntroInit()
 
 static void textAnimScript(int t)
 {
-	if (t > 500 && t < 2000) {
-		updateFontAnimPos(myText1, getAnimIntervalF16(500, 2000, t));
+	if (t > 500 && t < 3000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(500, 3000, t));
 	}
 	
 	if (t > 500) drawSprite(myText1->chars[0]);
