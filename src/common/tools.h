@@ -13,6 +13,9 @@
 
 #define TEXT_ZOOM_SHR 8
 
+#define CLAMP(value,min,max) if (value<min) value=min; if (value>max) value=max;
+
+
 #include "graphics.h"
 
 
@@ -32,8 +35,9 @@ int getTicks(void);
 
 int runEffectSelector(char **str, int size);
 
-void setPal(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal, int shr);
-void setPalWithFades(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal, int numFades, int r2, int g2, int b2);
+void setPal(int c, int r, int g, int b, uint16* pal);
+void setPalGradient(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal);
+void setPalGradientFromPrevIndex(int c0, int c1, int r1, int g1, int b1, uint16* pal);
 void drawBorderEdges(int posX, int posY, int width, int height);
 
 void setupWindowFeedbackCel(int posX, int posY, int width, int height, int bufferIndex, CCB *cel);

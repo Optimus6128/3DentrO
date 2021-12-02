@@ -318,70 +318,48 @@ int runEffectSelector(char **str, int size)
 	} while(true);
 }
 
-void setPalWithFades(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal, int numFades, int r2, int g2, int b2)
+void setPal(int c, int r, int g, int b, uint16* pal)
 {
-	int i, j, rr, gg, bb;
-	float rr2, gg2, bb2;
-	float ddr, ddg, ddb;
-	float dc = (float)(c1 - c0);
-	float dr = (float)(r1 - r0) / dc;
-	float dg = (float)(g1 - g0) / dc;
-	float db = (float)(b1 - b0) / dc;
-	float r = (float)r0;
-	float g = (float)g0;
-	float b = (float)b0;
+	CLAMP(r, 0, 31)
+	CLAMP(g, 0, 31)
+	CLAMP(b, 0, 31)
 
-	pal+=c0;
-	for (i=c0; i<=c1; i++)
-	{
-		rr = (int)r >> 3;
-		gg = (int)g >> 3;
-		bb = (int)b >> 3;
-		*pal = (rr << 10) | (gg << 5) | bb;
-		rr2 = r; gg2 = g; bb2 = b;
-		ddr = ((float)r2 - r) / (float)numFades;
-		ddg = ((float)g2 - g) / (float)numFades;
-		ddb = ((float)b2 - b) / (float)numFades;
-		for (j=1; j<numFades; j++)
-		{
-			rr = (int)rr2 >> 3;
-			gg = (int)gg2 >> 3;
-			bb = (int)bb2 >> 3;
-			*(pal + (j << 5)) = (rr << 10) | (gg << 5) | bb;
-			rr2 += ddr;
-			gg2 += ddg;
-			bb2 += ddb;
-		}
-		r += dr;
-		g += dg;
-		b += db;
-		pal++;
-	}
+	pal[c] = (r << 10) | (g << 5) | b;
 }
 
-void setPal(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal, int shr)
+void setPalGradient(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal)
 {
-	int i, rr, gg, bb;
-	float dc = (float)(c1 - c0);
-	float dr = (float)(r1 - r0) / dc;
-	float dg = (float)(g1 - g0) / dc;
-	float db = (float)(b1 - b0) / dc;
+	int i;
+	const float dc = (float)(c1 - c0);
+	const float dr = (float)(r1 - r0) / dc;
+	const float dg = (float)(g1 - g0) / dc;
+	const float db = (float)(b1 - b0) / dc;
 	float r = (float)r0;
 	float g = (float)g0;
 	float b = (float)b0;
 
-	pal+=c0;
-	for (i=c0; i<=c1; i++)
+	for (i = c0; i <= c1; i++)
 	{
-		rr = (int)r >> shr;
-		gg = (int)g >> shr;
-		bb = (int)b >> shr;
-		*pal++ = (rr << 10) | (gg << 5) | bb;
+		setPal(i, (int)r, (int)g, (int)b, pal);
+
 		r += dr;
 		g += dg;
 		b += db;
 	}
 }
+
+void setPalGradientFromPrevIndex(int c0, int c1, int r1, int g1, int b1, uint16* pal)
+{
+	int r0, g0, b0;
+
+	c0--;
+	r0 = (pal[c0] >> 10) & 31;
+	g0 = (pal[c0] >> 5) & 31;
+	b0 = pal[c0] & 31;
+
+	setPalGradient(c0, c1, r0, g0, b0, r1, g1, b1, pal);
+}
+
 
 /*
 // Will finish later. Ness more, bpp, skipping pixels depending on bpp, etc..
