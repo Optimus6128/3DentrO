@@ -5,6 +5,8 @@
 #include "system_graphics.h"
 #include "sprite_engine.h"
 
+#include "tools.h"
+
 #define FONT_WIDTH 16
 #define FONT_HEIGHT 16
 #define FONT_SIZE (FONT_WIDTH * FONT_HEIGHT)
@@ -43,11 +45,14 @@ TextSpritesList *generateTextCCBs(char *text)
 	for (i=0; i<textSprites->numChars; ++i) {
 		int *dstPtr = (int*)fonts->ccb_SourcePtr;
 		int fontOff = fontMap[text[i]];
-		if (fontOff!=0) dstPtr += ((fontOff-1) << 1);
 
 		textSprites->chars[i] = newSprite(FONT_WIDTH, FONT_HEIGHT, 4, CREATECEL_CODED, fonts->ccb_PLUTPtr, (ubyte*)fonts->ccb_SourcePtr);
 		textSprites->chars[i]->cel->ccb_PRE1 = (textSprites->chars[i]->cel->ccb_PRE1 & ~PRE1_WOFFSET8_MASK) | (((fonts->ccb_Width >> 3) - 2) << PRE1_WOFFSET8_SHIFT);
-		textSprites->chars[i]->cel->ccb_SourcePtr = (CelData*)dstPtr;
+
+		if (fontOff!=0) {
+			dstPtr += ((fontOff-1) << 1);
+			textSprites->chars[i]->cel->ccb_SourcePtr = (CelData*)dstPtr;
+		}
 
 		textSprites->startPos[i].animSpeedF8 = 256;
 		textSprites->endPos[i].animSpeedF8 = 256;
@@ -124,6 +129,8 @@ void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
 {
 	int i;
 	FontPos fp;
+
+	CLAMP(timeF16, 0, 65536)
 
 	for (i=0; i<textSprites->numChars; ++i) {
 		FontPos *fpStart = &textSprites->startPos[i];

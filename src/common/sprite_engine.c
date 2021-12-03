@@ -88,7 +88,8 @@ static void hideSpriteIfZoomMinus(Sprite *spr)
 
 static void mapZoomSprite(Sprite *spr)
 {
-	hideSpriteIfZoomMinus(spr);
+	if (spr->zoom < 256)
+		hideSpriteIfZoomMinus(spr);
 
 	spr->cel->ccb_XPos = (spr->posX - (((spr->width >> 1) * spr->zoom) >> 8)) << 16;
 	spr->cel->ccb_YPos = (spr->posY - (((spr->height >> 1) * spr->zoom) >> 8)) << 16;
@@ -101,7 +102,8 @@ static void mapZoomRotateSprite(Sprite *spr)
 {
 	int hdx, hdy, vdx, vdy;
 
-	hideSpriteIfZoomMinus(spr);
+	if (spr->zoom < 256)
+		hideSpriteIfZoomMinus(spr);
 
 	hdx = (spr->zoom * CosF16(spr->angle<<8)) >> 16;
 	hdy = (spr->zoom * -SinF16(spr->angle<<8)) >> 16;
