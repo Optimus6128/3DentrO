@@ -19,6 +19,8 @@
 
 static CCB *fonts;
 
+static uint16 fuckPal0[16];
+
 static unsigned char fontMap[256] = {	/*0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
 										20,21,22,23,24,0,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,0,56,0,57,
 										0,0,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,0,0,0,84,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -59,6 +61,11 @@ TextSpritesList *generateTextCCBs(char *text)
 
 		if (i>0) LinkCel(textSprites->chars[i-1]->cel, textSprites->chars[i]->cel);
 		if (fontOff==0) textSprites->chars[i]->cel->ccb_Flags |= CCB_SKIP;
+	}
+
+	setPalGradient(0,7, 0,0,0, 31,31,31, fuckPal0);
+	for (i=0; i<textSprites->numChars; ++i) {
+		textSprites->chars[i]->cel->ccb_PLUTPtr = fuckPal0;
 	}
 
 	return textSprites;
@@ -142,6 +149,24 @@ void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
 		fp.posY = interpolateValue(fpStart->posY, fpEnd->posY, newTimeF16);
 		fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, newTimeF16);
 		fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, newTimeF16);
+
+		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
+	}
+}
+
+void waveFontAnimPos(TextSpritesList* textSprites, int s0, int s1, int f0, int f1, int a0, int a1, int t, int offX)
+{
+	int i;
+	FontPos fp;
+
+	for (i=0; i<textSprites->numChars; ++i) {
+		FontPos *fpStart = &textSprites->startPos[i];
+		//FontPos *fpEnd = &textSprites->endPos[i];
+
+		fp.posX = fpStart->posX + (SinF16(f0*(s0*i+t))>>a0) + offX;
+		fp.posY = fpStart->posY + (SinF16(f1*(s1*i+t))>>a1);
+		fp.zoom = fpStart->zoom;
+		fp.angle = fpStart->angle;
 
 		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
 	}

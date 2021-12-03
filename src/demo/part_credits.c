@@ -22,7 +22,6 @@ static bool isCreditsInit = false;
 
 static int pixcFades[8] = {0x0380, 0x0780, 0x0B80, 0x0F80, 0x1380, 0x1780, 0x1B80, 0x1F80};
 
-static uint16 fuckPal2[7];
 
 static TextSpritesList *creditsText[6];
 
@@ -69,13 +68,6 @@ void partCreditsInit()
 
 		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i+1], SCREEN_WIDTH + SCREEN_WIDTH/4, (7*SCREEN_HEIGHT)/8, 0, 0, true);
 		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i+1], ((5+j)*SCREEN_WIDTH)/8, (7*SCREEN_HEIGHT)/8, 0, 0, false);
-	}
-
-	setPalGradient(0,7, 0,0,0, 31,31,31, fuckPal2);	// A bug happens and the fonts lose their palette or have wrong pointerafter loading, so we force to get it again
-	for (j=0; j<6; ++j) {
-		for (i=0; i<creditsText[j]->numChars; ++i) {
-			creditsText[j]->chars[i]->cel->ccb_PLUTPtr = fuckPal2;
-		}
 	}
 
 	isCreditsInit = true;

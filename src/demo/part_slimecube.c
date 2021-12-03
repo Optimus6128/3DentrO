@@ -44,7 +44,6 @@ static int totalRegions;
 
 static TextSpritesList *dentroText[16];
 
-static uint16 fuckPal3[7];
 
 static void scaleLineSprites(int offX, int offY, int zoom)
 {
@@ -115,13 +114,6 @@ void partSlimecubeInit()
 	dentroText[14] = generateTextCCBs("     DEMOSCENE ");
 	dentroText[15] = generateTextCCBs("AND REAL 3DO MEMES");
 
-	setPalGradient(0,7, 0,0,0, 31,31,31, fuckPal3);	// A bug happens and the fonts lose their palette or have wrong pointerafter loading, so we force to get it again
-	for (j=0; j<16; ++j) {
-		for (i=0; i<dentroText[j]->numChars; ++i) {
-			dentroText[j]->chars[i]->cel->ccb_PLUTPtr = fuckPal3;
-		}
-	}
-
 	for (i=0; i<16; ++i) {
 		int py = i & 3;
 		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 24 + py * 64, 0, 0, true);
@@ -164,7 +156,7 @@ static int getBackInTimeIter(int presentIter, int line, int t)
 	return pastIter;
 }
 
-static void drawPage(int page, int t)
+static void drawPage(int page, int t, int pageOffX)
 {
 	int i;
 	int textIndex = (page << 2);
@@ -178,7 +170,8 @@ static void drawPage(int page, int t)
 			setSpritePositionZoomRotate(dentroText[aman]->chars[i], fp->posX, fp->posY, fp->zoom, fp->angle);
 		}*/
 		
-		updateFontAnimPos(dentroText[aman], 0);
+		//updateFontAnimPos(dentroText[aman], 0);
+		waveFontAnimPos(dentroText[aman], 8192, 4096, 512, 640, 15, 14, 64*i + 24*t, pageOffX);
 		
 		drawSprite(dentroText[aman]->chars[0]);
 	}
@@ -206,14 +199,23 @@ static void slimecubeAnimScript(int t)
 static void dentroTextAnimScript(int t)
 {
 	int i;
+	const int tOffRange = 2000;
 	const int tRange[8] = {1000,12000, 13000,25000, 26000,38000, 39000,151000};
 
 	for (i=0; i<8; i+=2) {
 		const int t0 = tRange[i];
 		const int t1 = tRange[i+1];
 
+		int pageOffX = 0;
+		if (t>t0 && t<t0+tOffRange) {
+			pageOffX = (t0+tOffRange - t) >> 2;
+		} else if (t>t1-tOffRange && t<t1) {
+			pageOffX = (t1-tOffRange - t) >> 2;
+		}
+		CLAMP(pageOffX, -512, 512);
+
 		if (t > t0 && t < t1) {
-			drawPage(i>>1, t-t0);
+			drawPage(i>>1, t-t0, pageOffX);
 		}
 	}
 
