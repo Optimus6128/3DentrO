@@ -57,7 +57,7 @@ static void runDemo()
 
 	if (partIndex==PART_INTRO && dt > 25000) {
 		switchPart(PART_CREDITS);
-	} else if (partIndex==PART_CREDITS && dt > 25000) {
+	} else if (partIndex==PART_CREDITS && dt > 36000) {
 		switchPart(PART_SPRITES_GECKO);
 	}
 }

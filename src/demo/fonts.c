@@ -115,6 +115,8 @@ static int interpolateValue(int x0, int x1, int timeF16)
 
 int getAnimIntervalF16(int t0, int t1, int t)
 {
+	if (t0==t1) return 65536;
+
 	return ((t-t0) << 16) / (t1-t0);
 }
 
