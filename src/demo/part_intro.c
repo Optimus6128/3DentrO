@@ -106,7 +106,7 @@ void partIntroInit()
 		setPalGradientFromPrevIndex(c+96,c+127, (cc*1)>>10,	(cc*2)>>10,(cc*3)>>10, palsAnim);
 	}
 
-	setPalGradient(0,15, 0,0,0, 31,31,31, fuckPal);
+	setPalGradient(0,7, 0,0,0, 31,31,31, fuckPal);
 	for (i=0; i<myText1->numChars; ++i) {
 		myText1->chars[i]->cel->ccb_PLUTPtr = fuckPal;
 	}
