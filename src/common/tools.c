@@ -330,21 +330,22 @@ void setPal(int c, int r, int g, int b, uint16* pal)
 void setPalGradient(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int b1, uint16* pal)
 {
 	int i;
-	const float dc = (float)(c1 - c0);
-	const float dr = (float)(r1 - r0) / dc;
-	const float dg = (float)(g1 - g0) / dc;
-	const float db = (float)(b1 - b0) / dc;
-	float r = (float)r0;
-	float g = (float)g0;
-	float b = (float)b0;
+	const int dc = (c1 - c0);
+	const int dr = ((r1 - r0) << 16) / dc;
+	const int dg = ((g1 - g0) << 16) / dc;
+	const int db = ((b1 - b0) << 16) / dc;
+
+	r0 <<= 16;
+	g0 <<= 16;
+	b0 <<= 16;
 
 	for (i = c0; i <= c1; i++)
 	{
-		setPal(i, (int)r, (int)g, (int)b, pal);
+		setPal(i, r0>>16, g0>>16, b0>>16, pal);
 
-		r += dr;
-		g += dg;
-		b += db;
+		r0 += dr;
+		g0 += dg;
+		b0 += db;
 	}
 }
 

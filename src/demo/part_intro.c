@@ -18,6 +18,8 @@ static CCB *radialCel[8];
 static uint16 radialPals[256];
 static uint16 palsAnim[1024];
 
+static uint16 introFontsPal[16];
+
 static bool isIntroInit = false;
 
 
@@ -78,18 +80,11 @@ void partIntroInit()
 		radialCel[i]->ccb_YPos = (yp * SCREEN_HEIGHT / 2) << 16;
 	}
 
-	// Unorthodox link order hack in the hope of covering some black buggy pixels from the packer (that I can't fix now because of the deadline)
-	// Commented out. There are few black pixels that didn't register as transparent in the packer (maybe at the edges before the end of line or something)
-	// But when I disabled CCB_BGND (it works the other way around, clean it to HAVE background, enable it to ERASE background, wtf?)
-	// Also NOBLK works opposite of what it's name means. Set it on to get absolute 0,0,0 black.
-	// I keep this code as I will have to go back to the packer and see what's wrong. The star has also an ugly black pattern that should also be transparent.
-	/*for (i=1; i<4; ++i) {
-		LinkCel(radialCel[i-1], radialCel[i]);
-		LinkCel(radialCel[8-i], radialCel[7-i]);
-	}
-	LinkCel(radialCel[3], radialCel[7]);*/
-
 	myText1 = generateTextCCBs("3DOISBACK!");
+
+	setPal(0, 0,0,0, introFontsPal);
+	setPalGradient(1,7, 1,3,11, 31,31,31, introFontsPal);
+	setFontsPalette(myText1, introFontsPal);
 
 	setFontsAnimPos(FONTPOS_ORIGIN, myText1, 0, 0, 0, 24, true);
 	setFontsAnimPos(FONTPOS_3DO, myText1, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0, 0, false);

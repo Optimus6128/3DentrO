@@ -22,11 +22,13 @@ typedef struct TextSpritesList
 	FontPos *endPos;
 }TextSpritesList;
 
+extern int pixcFades[9];
 
 void initFonts(void);
 
 TextSpritesList *generateTextCCBs(char *text);
 
+void setFontsPalette(TextSpritesList *textSprites, uint16 *pal);
 void setFontsAnimPos(int type, TextSpritesList* textSprites, int posX, int posY, int angleStart, int angleInc, bool isStart);
 void updateFontAnimPos(TextSpritesList* textSprites, int timeF16);
 void waveFontAnimPos(TextSpritesList* textSprites, int s0, int s1, int f0, int f1, int a0, int a1, int t, int offX);

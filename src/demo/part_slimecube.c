@@ -78,7 +78,7 @@ static void initFeedbackLineSprites()
 
 void partSlimecubeInit()
 {
-	int i,j;
+	int i;
 
 	initFeedbackLineSprites();
 

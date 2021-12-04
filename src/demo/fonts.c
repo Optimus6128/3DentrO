@@ -19,8 +19,6 @@
 
 static CCB *fonts;
 
-static uint16 fuckPal0[16];
-
 static unsigned char fontMap[256] = {	/*0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
 										20,21,22,23,24,0,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,0,56,0,57,
 										0,0,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,0,0,0,84,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -32,6 +30,9 @@ static unsigned char fontMap[256] = {	/*0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 										0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 										0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 										0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+int pixcFades[9] = {0x0380, 0x0780, 0x0B80, 0x0F80, 0x1380, 0x1780, 0x1B80, 0x1F80, 0x1F00};
+
 
 TextSpritesList *generateTextCCBs(char *text)
 {
@@ -63,12 +64,15 @@ TextSpritesList *generateTextCCBs(char *text)
 		if (fontOff==0) textSprites->chars[i]->cel->ccb_Flags |= CCB_SKIP;
 	}
 
-	setPalGradient(0,7, 0,0,0, 31,31,31, fuckPal0);
-	for (i=0; i<textSprites->numChars; ++i) {
-		textSprites->chars[i]->cel->ccb_PLUTPtr = fuckPal0;
-	}
-
 	return textSprites;
+}
+
+void setFontsPalette(TextSpritesList *textSprites, uint16 *pal)
+{
+	int i;
+	for (i=0; i<textSprites->numChars; ++i) {
+		textSprites->chars[i]->cel->ccb_PLUTPtr = pal;
+	}
 }
 
 static void setPositionStyle(int type, int i, int perc, int posX, int posY, int angle, FontPos *fPos)
@@ -92,21 +96,22 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 		
 		case FONTPOS_3DO:
 		{
-			fPos->zoom = 448;
+			fPos->zoom = 512;
 			fPos->angle = 0;
 			if (i < 3) {
-				fPos->posX = posX + (i-1) * FONT_WIDTH * 1.75 + 4;
+				fPos->posX = posX + (i-1) * FONT_WIDTH * 2 + 4;
 				fPos->posY = posY - 48 - 8 * (i&1);
-				fPos->angle = (1-i) * 1024;
+				fPos->angle = 0;//(1-i) * 1024;
 			} else if (i < 5) {
-				fPos->posX = posX + (i-4) * FONT_WIDTH * 1.75 + 16;
+				fPos->posX = posX + (i-4) * FONT_WIDTH * 2 + 16;
 				fPos->posY = posY;
 			} else {
-				fPos->posX = posX + (i-7) * FONT_WIDTH * 1.75 + 8;
-				fPos->posY = posY + 48;
-				if (i==5 || i==9) {fPos->posY -=8;}
-				if (i==6 || i==8) {fPos->posY -=4;}
-				fPos->angle = (i-7) * 1024;
+				fPos->posX = posX + (i-7) * FONT_WIDTH * 2 + 12;
+				fPos->posY = posY + 52;
+				if (i==5 || i==9) {fPos->posY -=10;}
+				if (i==6) {fPos->posY -=2;}
+				if (i==8) {fPos->posY -=5;}
+				fPos->angle = 0;//(i-7) * 1024;
 			}
 		} break;
 

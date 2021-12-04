@@ -20,10 +20,11 @@ static int starSpeeds[NUM_STARS] = {1,2,3,1,2,3,2,1};
 
 static bool isCreditsInit = false;
 
-static int pixcFades[8] = {0x0380, 0x0780, 0x0B80, 0x0F80, 0x1380, 0x1780, 0x1B80, 0x1F80};
-
+static uint16 creditsFontsPal[6][16];
 
 static TextSpritesList *creditsText[6];
+static char *creditsStr[6] = { "CODE", "OPTIMUS", "FONTS", "HAM", "MUSIC", "HAM" };
+
 
 void partCreditsInit()
 {
@@ -54,12 +55,19 @@ void partCreditsInit()
 		if (i>0) LinkCel(star8[i-1]->cel, star8[i]->cel);
 	}
 
-	creditsText[0] = generateTextCCBs("CODE");
-	creditsText[1] = generateTextCCBs("OPTIMUS");
-	creditsText[2] = generateTextCCBs("FONTS");
-	creditsText[3] = generateTextCCBs("HAM");
-	creditsText[4] = generateTextCCBs("MUSIC");
-	creditsText[5] = generateTextCCBs("HAM");
+	for (i=0; i<6; ++i) {
+		creditsText[i] = generateTextCCBs(creditsStr[i]);
+		setFontsPalette(creditsText[i], creditsFontsPal[i]);
+		setPal(0, 0,0,0, creditsFontsPal[i]);
+	}
+	setPalGradient(1,7, 11,5,3, 31,23,15, creditsFontsPal[0]);
+	setPalGradient(1,7, 7,11,3, 15,27,7, creditsFontsPal[1]);
+	
+	setPalGradient(1,7, 3,5,11, 7,23,31, creditsFontsPal[2]);
+	setPalGradient(1,7, 3,11,7, 7,27,15, creditsFontsPal[3]);
+	
+	setPalGradient(1,7, 11,3,5, 31,15,23, creditsFontsPal[4]);
+	setPalGradient(1,7, 11,7,3, 27,20,11, creditsFontsPal[5]);
 
 	for (i=0; i<6; i+=2) {
 		if (i > 0) j = 1;
@@ -76,23 +84,43 @@ void partCreditsInit()
 static void animSky(int t)
 {
 	static int skyScale = 16 * 256;
+	const int offf = 3500;
+	int pixI;
 
-	if (t > 100 && t < 1800) {
-		skyScale = 16 * 256 - ((getAnimIntervalF16(100, 1800, t) * 15 * 256) >> 16);
+	if (t < 256) {
+		pixI = t>>5;
+	} else
+	if (t < 1800) {
+		pixI = 8;
+		skyScale = 16 * 256 - ((getAnimIntervalF16(256, 1800, t) * 15 * 256) >> 16);
 	}
-	if (t > 1800) skyScale = 256;
-	if (skyScale < 256) skyScale = 256;
+	if (t > 1800 && t < 29000+offf) skyScale = 256;
+	if (t > 29000+offf && t < 30000+offf) {
+		skyScale = ((getAnimIntervalF16(29000+offf, 30000+offf, t) * 16 * 256) >> 16);
+	}
+	if (t > 30000+offf && t < 30500+offf) {
+		pixI = 7 - ((t - (30000+offf))>>6);
+	}
 
-	skyCel->ccb_YPos = ((((SCREEN_HEIGHT/2) << 8) - skyScale * (SCREEN_HEIGHT/2)) << 8);
-	skyCel->ccb_VDY = skyScale << 8;
 
-	drawCels(skyCel);
+	if (t < 30500+offf) {
+		if (skyScale < 256) skyScale = 256;
+		if (skyScale > 16 * 256) skyScale = 16 * 256;
+
+		skyCel->ccb_YPos = ((((SCREEN_HEIGHT/2) << 8) - skyScale * (SCREEN_HEIGHT/2)) << 8);
+		skyCel->ccb_VDY = skyScale << 8;
+
+		CLAMP(pixI,0,7)
+		skyCel->ccb_PIXC = pixcFades[pixI];
+
+		drawCels(skyCel);
+	}
 }
 
 static void animRadial(int t)
 {
 	static int zoom = 0;
-	static int skyFade = 0;
+	static int radialFade = 0;
 
 	int radialPosX = SCREEN_WIDTH / 2 + (SinF16(t << 10) >> 9);
 	int radialPosY = SCREEN_HEIGHT / 2 + (SinF16(t << 11) >> 10);
@@ -102,11 +130,15 @@ static void animRadial(int t)
 		zoom = getAnimIntervalF16(2000, 5000, t) >> 8;
 	}
 	if (t > 5000) zoom = 256;
-	
-	skyFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
-	CLAMP(skyFade, 0, 4)
 
-	radialSpr->cel->ccb_PIXC = pixcFades[skyFade];
+	if (t > 31000) {
+		zoom = 256 - (getAnimIntervalF16(31000, 33000, t) >> 8);
+	}
+	
+	radialFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
+	CLAMP(radialFade, 0, 4)
+
+	radialSpr->cel->ccb_PIXC = pixcFades[radialFade];
 
 	setSpritePositionZoomRotate(radialSpr, radialPosX, radialPosY, zoom, t<<3);
 	drawSprite(radialSpr);
@@ -124,7 +156,9 @@ static void animStars(int t)
 		star8[i]->cel->ccb_PIXC = pixcFades[fade];
 		
 		star8[i]->posX -= starSpeeds[i];
-		if (star8[i]->posX < -32) star8[i]->posX = SCREEN_WIDTH + getRand(32, 128);
+
+		if (t<24000 && star8[i]->posX < -32) star8[i]->posX = SCREEN_WIDTH + getRand(32, 128);
+
 		setSpritePositionZoomRotate(star8[i], star8[i]->posX, star8[i]->posY, 256 - (zoom << 4), t<<(3 + (i & 3)));
 	}
 	drawSprite(star8[0]);
