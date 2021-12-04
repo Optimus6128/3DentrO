@@ -221,6 +221,34 @@ static void dentroTextAnimScript(int t)
 
 }
 
+static void slimecubeOpenSky(int t)
+{
+	static int skyScale = 4 * 256;
+	int pixI;
+
+	if (t < 256) {
+		pixI = t>>5;
+	} else
+	if (t < 1700) {
+		pixI = 8;
+		skyScale = 4 * 256 - ((getAnimIntervalF16(256, 1700, t) * 3 * 256) >> 16);
+	} else {
+		skyScale = 256;
+		pixI = 8;
+	}
+
+	if (skyScale < 256) skyScale = 256;
+	if (skyScale > 4 * 256) skyScale = 4 * 256;
+
+	skyCel2->ccb_YPos = ((((SCREEN_HEIGHT/2) << 8) - skyScale * (SCREEN_HEIGHT/2)) << 8);
+	skyCel2->ccb_VDY = skyScale << 8;
+
+	CLAMP(pixI,0,8)
+	skyCel2->ccb_PIXC = pixcFades[pixI];
+
+	drawCels(skyCel2);
+}
+
 void partSlimecubeRun(int ticks)
 {
 	int i;
@@ -254,7 +282,7 @@ void partSlimecubeRun(int ticks)
 
 	switchRenderToBuffer(false);
 
-	drawCels(skyCel2);
+	slimecubeOpenSky(ticks);
 
 	drawSprite(feedbackLineSpr[0]);
 	

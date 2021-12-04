@@ -110,7 +110,7 @@ static void animSky(int t)
 		skyCel->ccb_YPos = ((((SCREEN_HEIGHT/2) << 8) - skyScale * (SCREEN_HEIGHT/2)) << 8);
 		skyCel->ccb_VDY = skyScale << 8;
 
-		CLAMP(pixI,0,7)
+		CLAMP(pixI,0,8)
 		skyCel->ccb_PIXC = pixcFades[pixI];
 
 		drawCels(skyCel);
@@ -188,21 +188,16 @@ static void animCredits(int t)
 	}
 }
 
-static void creditsAnimScript(int t)
-{
-	animSky(t);
-
-	if (t > 2000) {
-		animRadial(t);
-	}
-
-	if (t > 3000) {
-		animStars(t);
-	}
-	animCredits(t);
-}
-
 void partCreditsRun(int ticks)
 {
-	creditsAnimScript(ticks);
+	animSky(ticks);
+
+	if (ticks > 2000) {
+		animRadial(ticks);
+	}
+
+	if (ticks > 3000) {
+		animStars(ticks);
+	}
+	animCredits(ticks);
 }
