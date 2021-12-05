@@ -58,6 +58,7 @@ typedef struct BufferRegionInfo
 	int width, height;
 }BufferRegionInfo;
 
+static bool isSlimecubeInit = false;
 
 static Mesh *draculMesh;
 static Texture *draculTex;
@@ -121,6 +122,8 @@ static void initFeedbackLineSprites()
 void partSlimecubeInit()
 {
 	int i,j;
+	
+	if (isSlimecubeInit) return;
 
 	initFeedbackLineSprites();
 
@@ -135,27 +138,6 @@ void partSlimecubeInit()
 
 	skyCel2 = LoadCel("data/sky2.cel", MEMTYPE_CEL);
 	skyCel2->ccb_HDX = SCREEN_WIDTH << 20;
-
-
-/*	dentroText[0] = generateTextCCBs("  THIS IS 3DENTRO");
-	dentroText[1] = generateTextCCBs("   LITTLE TEXTRO");
-	dentroText[2] = generateTextCCBs("    TO ANNOUNCE");
-	dentroText[3] = generateTextCCBs("  3DO IS ALIVE!!!");
-
-	dentroText[4] = generateTextCCBs("   3DO COMMUNITY");
-	dentroText[5] = generateTextCCBs("    IS GROWING");
-	dentroText[6] = generateTextCCBs("   VISIT DISCORD");
-	dentroText[7] = generateTextCCBs("   3DO M1(OPERA)");
-
-	dentroText[8] = generateTextCCBs("  COME VISIT US!");
-	dentroText[9] = generateTextCCBs("   FOR DEV TIPS");
-	dentroText[10] = generateTextCCBs("      CHECK");
-	dentroText[11] = generateTextCCBs("    3DODEV.COM");
-
-	dentroText[12] = generateTextCCBs(" WE NEED MORE 3DO");
-	dentroText[13] = generateTextCCBs("   HOMEBREW AND");
-	dentroText[14] = generateTextCCBs("     DEMOSCENE ");
-	dentroText[15] = generateTextCCBs("AND REAL 3DO MEMES");*/
 
 	for (i=0; i<16; ++i) {
 		dentroText[i] = generateTextCCBs(dentroTextStr[i]);
@@ -178,6 +160,8 @@ void partSlimecubeInit()
 		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 24 + py * 64, 0, 0, true);
 		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 24 + py * 64, 0, 0, false);
 	}
+	
+	isSlimecubeInit = true;
 }
 
 static void renderDraculCube(int t)

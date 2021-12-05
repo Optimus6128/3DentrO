@@ -5,17 +5,16 @@
 #include "part_credits.h"
 #include "part_slimecube.h"
 #include "part_outro.h"
-#include "part_spritesGecko.h"
 
 #include "fonts.h"
 #include "sound.h"
 
 #include "tools.h"
 
-enum { PART_INTRO, PART_CREDITS, PART_SLIMECUBE, PART_OUTRO, PART_SPRITES_GECKO, PARTS_NUM };
+enum { PART_INTRO, PART_CREDITS, PART_SLIMECUBE, PART_OUTRO, PARTS_NUM };
 
-static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partCreditsInit, partSlimecubeInit, partOutroInit, partSpritesGeckoInit };
-static void(*partRunFunc[PARTS_NUM])(int,int) = { partIntroRun, partCreditsRun, partSlimecubeRun, partOutroRun, partSpritesGeckoRun };
+static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partCreditsInit, partSlimecubeInit, partOutroInit };
+static void(*partRunFunc[PARTS_NUM])(int,int) = { partIntroRun, partCreditsRun, partSlimecubeRun, partOutroRun };
 
 int partIndex = PART_INTRO;
 
@@ -39,7 +38,6 @@ static void initParts()
 	partInitFunc[PART_CREDITS]();
 	partInitFunc[PART_SLIMECUBE]();
 	partInitFunc[PART_OUTRO]();
-	//partInitFunc[PART_SPRITES_GECKO]();
 
 	switchPart(partIndex);
 
@@ -73,7 +71,7 @@ static void runDemo()
 int main()
 {
 	uint32 flags = CORE_VRAM_BUFFERS(2) | CORE_OFFSCREEN_BUFFERS(4);
-	flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
+	flags |= (CORE_SHOW_FPS | CORE_SHOW_MEM | CORE_DEFAULT_INPUT);
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);

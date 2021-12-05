@@ -88,6 +88,8 @@ static void animateTunnel(int t)
 
 void partOutroInit()
 {
+	if (isOutroInit) return;
+
 	tunnelCel = LoadCel("data/tunnel.cel", MEMTYPE_CEL);
 	tunnelBlob = LoadCel("data/tunnel_blob.cel", MEMTYPE_CEL);
 
