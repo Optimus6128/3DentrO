@@ -58,5 +58,5 @@ void partSpritesGeckoInit()
 
 void partSpritesGeckoRun(int ticks, int dt)
 {
-	//drawCels(microGex[0]);
+	drawCels(microGex[0]);
 }

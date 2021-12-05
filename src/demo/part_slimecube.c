@@ -46,8 +46,10 @@ static char *dentroTextStr[16] = {
 static uint16 dentroFontsPal[16][16];
 
 static uint16 pagesColsHigh[4*3] = { 31,27,25, 25,27,31, 25,31,27, 31,25,21 };
-//static uint16 pagesColsLow[4*3] = { 0,7,15, 15,7,0, 0,15,7, 15,0,7 };
 static uint16 pagesColsLow[4*3] = { 24,7,15, 15,7,24, 7,15,24, 11,7,15 };
+
+static bool renderSlimeCube = true;
+
 
 typedef struct BufferRegionInfo
 {
@@ -244,6 +246,11 @@ static void slimecubeAnimScript(int t, int dt)
 	if (t > 7000) {
 		zoom = 512;
 	}
+	if (t > 40000) {
+		posX += -((getAnimIntervalF16(40000, 43000, t) * 448) >> 16);
+	}
+	renderSlimeCube = (t < 43000);
+
 	//posY = SinF16(t<<14) >> 12;
 	posY = sinF16[(t>>2) & 255] >> 12;
 
@@ -254,7 +261,7 @@ static void dentroTextAnimScript(int t)
 {
 	int i;
 	const int tOffRange = 2000;
-	const int tRange[8] = {1000,12000, 13000,25000, 26000,38000, 39000,51000};
+	const int tRange[8] = {1000,10000, 11000,20000, 21000,30000, 31000,40000};
 
 	for (i=0; i<8; i+=2) {
 		const int t0 = tRange[i];
@@ -286,9 +293,13 @@ static void slimecubeOpenSky(int t)
 	if (t < 1700) {
 		pixI = 8;
 		skyScale = 4 * 256 - ((getAnimIntervalF16(256, 1700, t) * 3 * 256) >> 16);
-	} else {
+	} else if (t < 43000) {
 		skyScale = 256;
 		pixI = 8;
+	} else {
+		int tClose = (getAnimIntervalF16(43000, 45000, t) * 4 * 256) >> 16;
+		skyScale = tClose;
+		pixI = 7 - (tClose >> 6);
 	}
 
 	if (skyScale < 256) skyScale = 256;
@@ -305,44 +316,46 @@ static void slimecubeOpenSky(int t)
 
 void partSlimecubeRun(int ticks, int dt)
 {
-	int i;
-	const int time = ticks >> 4;
+	if (renderSlimeCube) {
+		int i;
+		const int time = ticks >> 4;
 
-	BufferRegionInfo *regionInfo = getBufferRegionInfoFromNum(regIter);
+		BufferRegionInfo *regionInfo = getBufferRegionInfoFromNum(regIter);
 
-	slimecubeAnimScript(ticks, dt);
+		slimecubeAnimScript(ticks, dt);
 
-	switchRenderToBuffer(true);
-	setRenderBuffer(regionInfo->index);
-	setScreenRegion(regionInfo->posX, regionInfo->posY, regionInfo->width, regionInfo->height);
+		switchRenderToBuffer(true);
+		setRenderBuffer(regionInfo->index);
+		setScreenRegion(regionInfo->posX, regionInfo->posY, regionInfo->width, regionInfo->height);
 
-	eraseCel->ccb_XPos = regionInfo->posX << 16;
-	eraseCel->ccb_YPos = regionInfo->posY << 16;
-	drawCels(eraseCel);
+		eraseCel->ccb_XPos = regionInfo->posX << 16;
+		eraseCel->ccb_YPos = regionInfo->posY << 16;
+		drawCels(eraseCel);
 
-	renderDraculCube(time);
+		renderDraculCube(time);
 
-	for (i=0; i<spriteLines; ++i) {
-		int posX, posY;
-		regionInfo = getBufferRegionInfoFromNum(getBackInTimeIter(regIter, i, time));
+		for (i=0; i<spriteLines; ++i) {
+			int posX, posY;
+			regionInfo = getBufferRegionInfoFromNum(getBackInTimeIter(regIter, i, time));
 
-		posX = regionInfo->posX;
-		posY = regionInfo->posY + (i<<1);
-		mapFeedbackSpriteToNewFramebufferArea(posX, posY, posX + regionInfo->width, posY + 2, regionInfo->index, feedbackLineSpr[i]);
+			posX = regionInfo->posX;
+			posY = regionInfo->posY + (i<<1);
+			mapFeedbackSpriteToNewFramebufferArea(posX, posY, posX + regionInfo->width, posY + 2, regionInfo->index, feedbackLineSpr[i]);
 
-		feedbackLineSpr[i]->cel->ccb_Flags &= ~CCB_BGND;
-		feedbackLineSpr[i]->cel->ccb_Flags |= CCB_NOBLK;
+			feedbackLineSpr[i]->cel->ccb_Flags &= ~CCB_BGND;
+			feedbackLineSpr[i]->cel->ccb_Flags |= CCB_NOBLK;
+		}
+
+		switchRenderToBuffer(false);
 	}
-
-	switchRenderToBuffer(false);
 
 	slimecubeOpenSky(ticks);
 
-	drawSprite(feedbackLineSpr[0]);
-	
-	dentroTextAnimScript(ticks);
+	if (renderSlimeCube) {
+		drawSprite(feedbackLineSpr[0]);
 
-	//drawBorderEdges(regionPosX, regionPosY, regionWidth, regionHeight);
+		dentroTextAnimScript(ticks);
 
-	regIter = (regIter + 1) % totalRegions;
+		regIter = (regIter + 1) % totalRegions;
+	}
 }
