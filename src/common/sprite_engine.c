@@ -5,6 +5,7 @@
 
 Sprite *newSprite(int width, int height, int bpp, int type, uint16 *pal, ubyte *bmp)
 {
+	uint16 *aman = pal;
 	Sprite *spr = (Sprite*)AllocMem(sizeof(Sprite), MEMTYPE_ANY);
 
 	spr->width = width;
@@ -14,7 +15,7 @@ Sprite *newSprite(int width, int height, int bpp, int type, uint16 *pal, ubyte *
 	spr->cel->ccb_SourcePtr = (void*)bmp;	// CreateCel is supposed to do that for you but fails for some pointer addresses, either a bug or something I miss
 
 	spr->cel->ccb_Flags |= (CCB_ACSC | CCB_ALSC);
-	if (type == CREATECEL_CODED) spr->cel->ccb_PLUTPtr = (PLUTChunk*)pal;
+	if (type == CREATECEL_CODED) spr->cel->ccb_PLUTPtr = (PLUTChunk*)aman;
 
 	spr->posX = spr->posY = 0;
 	spr->angle = 0;
@@ -105,8 +106,10 @@ static void mapZoomRotateSprite(Sprite *spr)
 	if (spr->zoom < 256)
 		hideSpriteIfZoomMinus(spr);
 
-	hdx = (spr->zoom * CosF16(spr->angle<<8)) >> 16;
-	hdy = (spr->zoom * -SinF16(spr->angle<<8)) >> 16;
+	//hdx = (spr->zoom * CosF16(spr->angle<<8)) >> 16;
+	//hdy = (spr->zoom * -SinF16(spr->angle<<8)) >> 16;
+	hdx = (spr->zoom * cosF16[(spr->angle>>8) & 255]) >> 16;
+	hdy = (spr->zoom * -sinF16[(spr->angle>>8) & 255]) >> 16;
 	vdx = -hdy;
 	vdy = hdx;
 

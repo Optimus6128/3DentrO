@@ -120,7 +120,7 @@ static void setPositionStyle(int type, int i, int perc, int posX, int posY, int 
 			fPos->posX = SCREEN_WIDTH/2 + ((CosF16(angle<<16) * (512 + perc)) >> 16);
 			fPos->posY = SCREEN_HEIGHT/2 + ((SinF16(angle<<16) * (512 + perc)) >> 16);
 			fPos->zoom = 1536;
-			fPos->angle = -65536 - 256 * perc;
+			fPos->angle = -65536 - 4096 * perc;
 		} break;
 	}
 }
@@ -137,7 +137,7 @@ int getAnimIntervalF16(int t0, int t1, int t)
 	return ((t-t0) << 16) / (t1-t0);
 }
 
-void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
+void updateFontAnimPos(TextSpritesList* textSprites, int timeF16, bool mustZoomRotate)
 {
 	int i;
 	FontPos fp;
@@ -147,15 +147,22 @@ void updateFontAnimPos(TextSpritesList* textSprites, int timeF16)
 	for (i=0; i<textSprites->numChars; ++i) {
 		FontPos *fpStart = &textSprites->startPos[i];
 		FontPos *fpEnd = &textSprites->endPos[i];
+		Sprite *charSpr = textSprites->chars[i];
+
 		int newTimeF16 = (timeF16 * textSprites->endPos[i].animSpeedF8) >> 8;
 		if (newTimeF16 > 65536) newTimeF16 = 65536;
 
 		fp.posX = interpolateValue(fpStart->posX, fpEnd->posX, newTimeF16);
 		fp.posY = interpolateValue(fpStart->posY, fpEnd->posY, newTimeF16);
-		fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, newTimeF16);
-		fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, newTimeF16);
 
-		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
+		if (mustZoomRotate) {
+			fp.zoom = interpolateValue(fpStart->zoom, fpEnd->zoom, newTimeF16);
+			fp.angle = interpolateValue(fpStart->angle, fpEnd->angle, newTimeF16);
+
+			setSpritePositionZoomRotate(charSpr, fp.posX, fp.posY, fp.zoom, fp.angle);
+		} else {
+			setSpritePosition(charSpr, fp.posX, fp.posY);
+		}
 	}
 }
 
@@ -168,12 +175,15 @@ void waveFontAnimPos(TextSpritesList* textSprites, int s0, int s1, int f0, int f
 		FontPos *fpStart = &textSprites->startPos[i];
 		//FontPos *fpEnd = &textSprites->endPos[i];
 
-		fp.posX = fpStart->posX + (SinF16(f0*(s0*i+t))>>a0) + offX;
-		fp.posY = fpStart->posY + (SinF16(f1*(s1*i+t))>>a1);
-		fp.zoom = fpStart->zoom;
-		fp.angle = fpStart->angle;
+		//fp.posX = fpStart->posX + (SinF16(f0*(s0*i+t))>>a0) + offX;
+		//fp.posY = fpStart->posY + (SinF16(f1*(s1*i+t))>>a1);
+		fp.posX = fpStart->posX + (sinF16[((f0*(s0*i+t))>>16) & 255]>>a0) + offX;
+		fp.posY = fpStart->posY + (sinF16[((f1*(s1*i+t))>>16) & 255]>>a1);
+		//fp.zoom = fpStart->zoom;
+		//fp.angle = fpStart->angle;
 
-		setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
+		setSpritePosition(textSprites->chars[i], fp.posX, fp.posY);
+		//setSpritePositionZoomRotate(textSprites->chars[i], fp.posX, fp.posY, fp.zoom, fp.angle);
 	}
 }
 

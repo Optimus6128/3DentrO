@@ -2,6 +2,6 @@
 #define PART_INTRO_H
 
 void partIntroInit(void);
-void partIntroRun(int ticks);
+void partIntroRun(int ticks, int dt);
 
 #endif

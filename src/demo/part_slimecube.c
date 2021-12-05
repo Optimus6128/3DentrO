@@ -148,7 +148,8 @@ static BufferRegionInfo *getBufferRegionInfoFromNum(int num)
 static int getBackInTimeIter(int presentIter, int line, int t)
 {
 	const int waveAmp = totalRegions >> 2;
-	const int wave = (((SinF16((3*line+2*t) << 16) + 65536) * waveAmp) >> 16) + (((SinF16((2*line-t) << 16) + 65536) * waveAmp) >> 16);
+	//const int wave = (((SinF16((3*line+2*t) << 16) + 65536) * waveAmp) >> 16) + (((SinF16((2*line-t) << 16) + 65536) * waveAmp) >> 16);
+	const int wave = (((sinF16[(3*line+2*t) & 255] + 65536) * waveAmp) >> 16) + (((sinF16[(2*line-t) & 255] + 65536) * waveAmp) >> 16);
 
 	int pastIter = presentIter - wave;
 	if (pastIter < 0) pastIter += totalRegions;
@@ -162,36 +163,32 @@ static void drawPage(int page, int t, int pageOffX)
 	int textIndex = (page << 2);
 
 	for (i=0; i<4; ++i) {
-		const int aman = textIndex + i;
-/*		for (j=0; j<dentroText[aman]->numChars; ++j) {
-			FontPos *fp = &dentroText[aman]->endPos[j];
-			dentroText[aman]->endPos[j].posX = dentroText[aman]->startPos[j].posX;// + (SinF16((8*i+16*j+t) << 12) >> 14);
-			dentroText[aman]->endPos[j].posY = dentroText[aman]->startPos[j].posY;// + (SinF16((12*i+24*j+t) << 12) >> 14);
-			setSpritePositionZoomRotate(dentroText[aman]->chars[i], fp->posX, fp->posY, fp->zoom, fp->angle);
-		}*/
-		
-		//updateFontAnimPos(dentroText[aman], 0);
-		waveFontAnimPos(dentroText[aman], 8192, 4096, 512, 640, 15, 14, 64*i + 24*t, pageOffX);
-		
-		drawSprite(dentroText[aman]->chars[0]);
+		waveFontAnimPos(dentroText[textIndex], 8192, 4096, 512, 640, 15, 14, 64*i + 24*t, pageOffX);
+		drawSprite(dentroText[textIndex]->chars[0]);
+		++textIndex;
 	}
 }
 
-static void slimecubeAnimScript(int t)
+static void slimecubeAnimScript(int t, int dt)
 {
-	static int posX = 512;
-	static int posY = 0;
-	static int zoom = 256;
+	int posX;
+	int posY;
+	int zoom;
 
 	if (t < 6000) {
-		posX -= 2;
-		if (posX < 0) posX = 0;
+		posX = 512 - ((getAnimIntervalF16(0, 6000, t) * 512) >> 16);
+		zoom = 256;
 	} else {
-		posX = SinF16((t-6000)<<13) >> 11;
-		zoom += 4;
-		if (zoom > 512) zoom = 512;
+		//posX = SinF16((t-6000)<<13) >> 11;
+		posX = sinF16[((t-6000)>>3) & 255] >> 11;
+		zoom = 256 + ((getAnimIntervalF16(6000, 7000, t) * 256) >> 16);
+		zoom &= ~3;
 	}
-	posY = SinF16(t<<14) >> 12;
+	if (t > 7000) {
+		zoom = 512;
+	}
+	//posY = SinF16(t<<14) >> 12;
+	posY = sinF16[(t>>2) & 255] >> 12;
 
 	scaleLineSprites(posX, posY, zoom);
 }
@@ -200,7 +197,7 @@ static void dentroTextAnimScript(int t)
 {
 	int i;
 	const int tOffRange = 2000;
-	const int tRange[8] = {1000,12000, 13000,25000, 26000,38000, 39000,151000};
+	const int tRange[8] = {1000,12000, 13000,25000, 26000,38000, 39000,51000};
 
 	for (i=0; i<8; i+=2) {
 		const int t0 = tRange[i];
@@ -249,14 +246,14 @@ static void slimecubeOpenSky(int t)
 	drawCels(skyCel2);
 }
 
-void partSlimecubeRun(int ticks)
+void partSlimecubeRun(int ticks, int dt)
 {
 	int i;
 	const int time = ticks >> 4;
 
 	BufferRegionInfo *regionInfo = getBufferRegionInfoFromNum(regIter);
 
-	slimecubeAnimScript(ticks);
+	slimecubeAnimScript(ticks, dt);
 
 	switchRenderToBuffer(true);
 	setRenderBuffer(regionInfo->index);

@@ -41,7 +41,8 @@ static void animateRadialPals(int t, int fadeShift)
 			const int tt2 = 2*k - t;
 			const int tt3 = 3*k + t;
 			const int tt4 = 5*k - 2*t;
-			const int ii = t + (SinF16(tt1<<14) >> 8) + (CosF16(tt2<<15) >> 9) + (SinF16(tt3<<16) >> 10) + (CosF16(tt4<<17) >> 11);
+			//const int ii = t + (SinF16(tt1<<14) >> 8) + (CosF16(tt2<<15) >> 9) + (SinF16(tt3<<16) >> 10) + (CosF16(tt4<<17) >> 11);
+			const int ii = t + (sinF16[(tt1>>2) & 255] >> 8) + (cosF16[(tt2>>1) & 255] >> 9) + (sinF16[tt3 & 255] >> 10) + (cosF16[(tt4<<1) & 255] >> 11);
 			const uint16 palVal = palsAnim[ii & 1023];
 			const int r = ((palVal >> 10) & 31) >> fadeShift;
 			const int g = ((palVal >> 5) & 31) >> fadeShift;
@@ -109,17 +110,18 @@ static void textAnimScript(int t)
 	static bool initSecondAnim = false;
 
 	if (t > 3000 && t < 7000) {
-		updateFontAnimPos(myText1, getAnimIntervalF16(3000, 7000, t));
+		updateFontAnimPos(myText1, getAnimIntervalF16(3000, 7000, t), true);
 	}
 
 	if (!initSecondAnim && t > 7000) {
+		updateFontAnimPos(myText1, 65536, true);
 		setFontsAnimPos(FONTPOS_3DO, myText1, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 0, 0, true);
 		setFontsAnimPos(FONTPOS_SWIRL, myText1, 0, 0, 0, 32, false);
 		initSecondAnim = true;
 	}
 
-	if (t > 15000 && t < 23000) {
-		updateFontAnimPos(myText1, getAnimIntervalF16(15000, 23000, t));
+	if (t > 15400 && t < 23000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(15400, 23000, t), true);
 	}
 
 	if (t > 3000 && t < 23000) drawSprite(myText1->chars[0]);
@@ -129,7 +131,7 @@ static void textAnimScript(int t)
 	}
 }
 
-void partIntroRun(int ticks)
+void partIntroRun(int ticks, int dt)
 {
 	animateRadialPals(ticks >> 4, fadeOutVal);
 	copyRadialPalsToCels();

@@ -82,11 +82,22 @@ static CCB *selectionBarCel = NULL;
 
 static Item timerIOreq = -1;
 
+int sinF16[256], cosF16[256];
+
 
 static void initTimer()
 {
 	if (timerIOreq < 0) {
 		timerIOreq = GetTimerIOReq();
+	}
+}
+
+static void initSinCosLuts()
+{
+	int i;
+	for (i=0; i<256; ++i) {
+		sinF16[i] = SinF16(i<<16);
+		cosF16[i] = CosF16(i<<16);
 	}
 }
 
@@ -149,6 +160,7 @@ void initTools()
 {
 	initTimer();
 	initTinyFonts();
+	initSinCosLuts();
 }
 
 void drawZoomedText(int xtp, int ytp, char *text, int zoom)

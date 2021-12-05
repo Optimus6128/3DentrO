@@ -14,12 +14,12 @@
 enum { PART_INTRO, PART_CREDITS, PART_SLIMECUBE, PART_SPRITES_GECKO, PARTS_NUM };
 
 static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partCreditsInit, partSlimecubeInit, partSpritesGeckoInit };
-static void(*partRunFunc[PARTS_NUM])(int) = { partIntroRun, partCreditsRun, partSlimecubeRun, partSpritesGeckoRun };
+static void(*partRunFunc[PARTS_NUM])(int,int) = { partIntroRun, partCreditsRun, partSlimecubeRun, partSpritesGeckoRun };
 
 int partIndex = PART_INTRO;
 
 int startPartTicks = -1;
-static void(*currentPartRunFunc)(int);
+static void(*currentPartRunFunc)(int,int);
 
 static void switchPart(int newPart) {
 
@@ -44,22 +44,24 @@ static void initParts()
 	startMusic("data/music.aiff");
 }
 
-
-
 static void runDemo()
 {
-	int dt;
+	static int dt = 0;
+	int t,t0,t1;
 
 	if (startPartTicks==-1) {
 		startPartTicks = getTicks();
 	}
-	dt = getTicks() - startPartTicks;
+	t = getTicks() - startPartTicks;
 
-	currentPartRunFunc(dt);
+	t0 = getTicks();
+	currentPartRunFunc(t,dt);
+	t1 = getTicks();
+	dt = t1-t0;
 
-	if (partIndex==PART_INTRO && dt > 25000) {
+	if (partIndex==PART_INTRO && t > 25000) {
 		switchPart(PART_CREDITS);
-	} else if (partIndex==PART_CREDITS && dt > 35000) {
+	} else if (partIndex==PART_CREDITS && t > 35000) {
 		switchPart(PART_SLIMECUBE);
 	}
 }
@@ -67,7 +69,7 @@ static void runDemo()
 int main()
 {
 	uint32 flags = CORE_VRAM_BUFFERS(2) | CORE_OFFSCREEN_BUFFERS(4);
-	//flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM | */ CORE_DEFAULT_INPUT);
+	flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM | */ CORE_DEFAULT_INPUT);
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);

@@ -16,7 +16,7 @@
 static Sprite *radialSpr;
 static CCB *skyCel;
 static Sprite *star8[NUM_STARS];
-static int starSpeeds[NUM_STARS] = {1,2,3,1,2,3,2,1};
+static int starSpeeds[NUM_STARS] = {1,2,3,4,2,3,1,2};
 
 static bool isCreditsInit = false;
 
@@ -43,6 +43,7 @@ void partCreditsInit()
 		} else {
 			star8[i] = newSprite(star8[0]->width, star8[0]->height, 8, CREATECEL_CODED, (uint16*)star8[0]->cel->ccb_PLUTPtr, (ubyte*)star8[0]->cel->ccb_SourcePtr);
 			star8[i]->cel->ccb_Flags = star8[0]->cel->ccb_Flags;
+			star8[i]->cel->ccb_SourcePtr = star8[0]->cel->ccb_SourcePtr;
 			star8[i]->cel->ccb_PLUTPtr = star8[0]->cel->ccb_PLUTPtr;
 		}
 		star8[i]->posX = getRand(640, 1280);
@@ -122,8 +123,10 @@ static void animRadial(int t)
 	static int zoom = 0;
 	static int radialFade = 0;
 
-	int radialPosX = SCREEN_WIDTH / 2 + (SinF16(t << 10) >> 9);
-	int radialPosY = SCREEN_HEIGHT / 2 + (SinF16(t << 11) >> 10);
+	//int radialPosX = SCREEN_WIDTH / 2 + (SinF16(t << 10) >> 9);
+	//int radialPosY = SCREEN_HEIGHT / 2 + (SinF16(t << 11) >> 10);
+	int radialPosX = SCREEN_WIDTH / 2 + (sinF16[(t >> 6) & 255] >> 9);
+	int radialPosY = SCREEN_HEIGHT / 2 + (sinF16[(t >> 5) & 255] >> 10);
 
 
 	if (t > 2000 && t < 5000) {
@@ -135,7 +138,8 @@ static void animRadial(int t)
 		zoom = 256 - (getAnimIntervalF16(31000, 33000, t) >> 8);
 	}
 	
-	radialFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
+	//radialFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
+	radialFade = (zoom >> 5) + (sinF16[(t >> 4) & 255] >> 14) - 3;
 	CLAMP(radialFade, 0, 4)
 
 	radialSpr->cel->ccb_PIXC = pixcFades[radialFade];
@@ -144,20 +148,23 @@ static void animRadial(int t)
 	drawSprite(radialSpr);
 }
 
-static void animStars(int t)
+static void animStars(int t, int dt)
 {
 	int i;
+	const int speedScale = 1 + (int)(dt > 26);
 
 	for (i=0; i<NUM_STARS; ++i) {
-		int zoom = (CosF16(t<<(12 + ((i+3) & 3))) + 65536) >> 14;
-		int fade = (SinF16(t<<(8 + ((i+7) & 3))) + 65536) >> 14;
+		//int zoom = (CosF16(t<<(12 + ((i+3) & 3))) + 65536) >> 14;
+		//int fade = (SinF16(t<<(8 + ((i+7) & 3))) + 65536) >> 14;
+		int zoom = (cosF16[((t<<(12 + ((i+3) & 3)))>>16) & 255] + 65536) >> 14;
+		int fade = (sinF16[((t<<(8 + ((i+7) & 3)))>>16) & 255] + 65536) >> 14;
 		CLAMP(fade, 1, 5)
 
 		star8[i]->cel->ccb_PIXC = pixcFades[fade];
-		
-		star8[i]->posX -= starSpeeds[i];
 
-		if (t<24000 && star8[i]->posX < -32) star8[i]->posX = SCREEN_WIDTH + getRand(32, 128);
+		star8[i]->posX -= starSpeeds[i] * speedScale;
+
+		if (t<26000 && star8[i]->posX < -32) star8[i]->posX = SCREEN_WIDTH + getRand(32, 128);
 
 		setSpritePositionZoomRotate(star8[i], star8[i]->posX, star8[i]->posY, 256 - (zoom << 4), t<<(3 + (i & 3)));
 	}
@@ -180,15 +187,15 @@ static void animCredits(int t)
 		const int t1 = tRange[i+1];
 		const int tOff = 1500;
 		if (t > t0 && t < t1) {
-			updateFontAnimPos(creditsText[i], getAnimIntervalF16(t0, t0+tOff, t));
-			updateFontAnimPos(creditsText[i+1], getAnimIntervalF16(t0+tOff, t0+2*tOff, t));
+			updateFontAnimPos(creditsText[i], getAnimIntervalF16(t0, t0+tOff, t), false);
+			updateFontAnimPos(creditsText[i+1], getAnimIntervalF16(t0+tOff, t0+2*tOff, t), false);
 			drawSprite(creditsText[i]->chars[0]);
 			drawSprite(creditsText[i+1]->chars[0]);
 		}
 	}
 }
 
-void partCreditsRun(int ticks)
+void partCreditsRun(int ticks, int dt)
 {
 	animSky(ticks);
 
@@ -197,7 +204,7 @@ void partCreditsRun(int ticks)
 	}
 
 	if (ticks > 3000) {
-		animStars(ticks);
+		animStars(ticks, dt);
 	}
 	animCredits(ticks);
 }
