@@ -3,11 +3,11 @@
 
 #include "engine_mesh.h"
 
-#define MAX_VERTICES_NUM 1024
+#define MAX_VERTICES_NUM 16
 
 #define PROJ_SHR 8
 #define REC_FPSHR 20
-#define NUM_REC_Z 32768
+#define NUM_REC_Z 4096
 
 void initEngine(void);
 

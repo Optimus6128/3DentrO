@@ -5,7 +5,6 @@
 #include "engine_mesh.h"
 #include "engine_texture.h"
 #include "engine_main.h"
-#include "engine_soft.h"
 
 #include "system_graphics.h"
 
@@ -180,12 +179,6 @@ void renderMesh(Mesh *ms)
 	renderTransformedMesh(ms);
 }
 
-void renderMeshSoft(Mesh *ms)
-{
-	transformMesh(ms);
-	renderTransformedMeshSoft(ms, vertices);
-}
-
 void setScreenRegion(int posX, int posY, int width, int height)
 {
 	// In the future I can do some of it origin clipping on the hardware API
@@ -214,6 +207,4 @@ void initEngine()
 
 	useCPUtestPolygonOrder(false);
 	useMapCelFunctionFast(true);
-
-	initEngineSoft();
 }
