@@ -16,7 +16,7 @@ enum { PART_INTRO, PART_CREDITS, PART_SLIMECUBE, PART_SPRITES_GECKO, PARTS_NUM }
 static void(*partInitFunc[PARTS_NUM])() = { partIntroInit, partCreditsInit, partSlimecubeInit, partSpritesGeckoInit };
 static void(*partRunFunc[PARTS_NUM])(int,int) = { partIntroRun, partCreditsRun, partSlimecubeRun, partSpritesGeckoRun };
 
-int partIndex = PART_INTRO;
+int partIndex = PART_SLIMECUBE;
 
 int startPartTicks = -1;
 static void(*currentPartRunFunc)(int,int);

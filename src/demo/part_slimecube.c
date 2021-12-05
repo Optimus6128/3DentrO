@@ -21,6 +21,34 @@
 #define FRAME_SUB_X 4
 #define FRAME_SUB_Y 3
 
+static char *dentroTextStr[16] = {
+"  THIS IS 3DENTRO", 
+"   LITTLE TEXTRO", 
+"    TO ANNOUNCE", 
+"  3DO IS ALIVE!!!", 
+
+"   3DO COMMUNITY",
+"    IS GROWING",
+"   VISIT DISCORD",
+"   3DO M1(OPERA)",
+
+"  COME VISIT US!",
+"   FOR DEV TIPS",
+"      CHECK",
+"    3DODEV.COM",
+
+" WE NEED MORE 3DO",
+"   HOMEBREW AND",
+"     DEMOSCENE ",
+"AND REAL 3DO MEMES"
+};
+
+static uint16 dentroFontsPal[16][16];
+
+static uint16 pagesColsHigh[4*3] = { 31,27,25, 25,27,31, 25,31,27, 31,25,21 };
+//static uint16 pagesColsLow[4*3] = { 0,7,15, 15,7,0, 0,15,7, 15,0,7 };
+static uint16 pagesColsLow[4*3] = { 24,7,15, 15,7,24, 7,15,24, 11,7,15 };
+
 typedef struct BufferRegionInfo
 {
 	int index;
@@ -90,7 +118,7 @@ static void initFeedbackLineSprites()
 
 void partSlimecubeInit()
 {
-	int i;
+	int i,j;
 
 	initFeedbackLineSprites();
 
@@ -106,7 +134,8 @@ void partSlimecubeInit()
 	skyCel2 = LoadCel("data/sky2.cel", MEMTYPE_CEL);
 	skyCel2->ccb_HDX = SCREEN_WIDTH << 20;
 
-	dentroText[0] = generateTextCCBs("  THIS IS 3DENTRO");
+
+/*	dentroText[0] = generateTextCCBs("  THIS IS 3DENTRO");
 	dentroText[1] = generateTextCCBs("   LITTLE TEXTRO");
 	dentroText[2] = generateTextCCBs("    TO ANNOUNCE");
 	dentroText[3] = generateTextCCBs("  3DO IS ALIVE!!!");
@@ -124,7 +153,23 @@ void partSlimecubeInit()
 	dentroText[12] = generateTextCCBs(" WE NEED MORE 3DO");
 	dentroText[13] = generateTextCCBs("   HOMEBREW AND");
 	dentroText[14] = generateTextCCBs("     DEMOSCENE ");
-	dentroText[15] = generateTextCCBs("AND REAL 3DO MEMES");
+	dentroText[15] = generateTextCCBs("AND REAL 3DO MEMES");*/
+
+	for (i=0; i<16; ++i) {
+		dentroText[i] = generateTextCCBs(dentroTextStr[i]);
+		setFontsPalette(dentroText[i], dentroFontsPal[i]);
+		setPal(0, 0,0,0, dentroFontsPal[i]);
+	}
+
+	for (j=0; j<4; ++j) {
+		const int c = 3*j;
+		for (i=0; i<4; ++i) {
+			setPalGradient(1,7+2*i, 
+							pagesColsLow[c],pagesColsLow[c+1],pagesColsLow[c+2], 
+							pagesColsHigh[c],pagesColsHigh[c+1],pagesColsHigh[c+2], dentroFontsPal[(j<<2)+i]);
+		}
+	}
+
 
 	for (i=0; i<16; ++i) {
 		int py = i & 3;
