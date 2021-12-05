@@ -77,4 +77,6 @@ int main()
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);
+
+	return 1;
 }

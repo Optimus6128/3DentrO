@@ -14,6 +14,8 @@ static bool showBuffers = false;
 static bool defaultInput = false;
 static bool menu = false;
 
+static bool keepRunning = true;
+
 static void initSystem()
 {
 	static bool systemIsInit = false;
@@ -93,9 +95,14 @@ void setShowBuffers(bool on)
 	showBuffers = on;
 }
 
+void sendQuit()
+{
+	keepRunning = false;
+}
+
 void coreRun(void(*mainLoopFunc)())
 {
-	while(true)
+	while(keepRunning)
 	{
 		updateInput();
 

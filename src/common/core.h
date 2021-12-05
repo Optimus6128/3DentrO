@@ -71,6 +71,7 @@
 
 void coreInit(void(*initFunc)(), uint32 flags);
 void coreRun(void(*mainLoopFunc)());
+void sendQuit(void);
 
 void setShowFps(bool on);
 void setShowMem(bool on);

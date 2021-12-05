@@ -17,7 +17,12 @@ static CCB *tunnelBlob;
 
 static bool isOutroInit = false;
 
+static Sprite *feedbackSpr1;
+static Sprite *feedbackSpr2;
+
 static uint16 texPatternDouble[6*5*4];
+
+static int mosaikZoom = 256;
 
 static int getWordOffset10(CCB *cel)
 {
@@ -97,10 +102,64 @@ void partOutroInit()
 
 	saveTunnelPattern();
 
+	feedbackSpr1 = newFeedbackSprite(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	feedbackSpr2 = newFeedbackSprite(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
+
 	isOutroInit = true;
+}
+
+static void mosaikZoomScript(int t)
+{
+	if (t<1024) {
+		mosaikZoom = t>>2;
+	} else if (t < 42000) {
+		mosaikZoom = 256;
+	} else if (t < 54000) {
+		mosaikZoom = (54000 - t) >> 5;
+	} else {
+		// quit
+		mosaikZoom = 4;
+		sendQuit();
+	}
+
+	CLAMP(mosaikZoom,4,256)
 }
 
 void partOutroRun(int ticks, int dt)
 {
+	mosaikZoomScript(ticks);
+
+	if (mosaikZoom < 256) {
+		setRenderBuffer(0);
+		switchRenderToBuffer(true);
+	}
+
 	animateTunnel(ticks);
+
+	if (mosaikZoom < 256) {
+		const int shrinkX = ((SCREEN_WIDTH*mosaikZoom) >> 8) & ~1;
+		const int shrinkY = ((SCREEN_HEIGHT*mosaikZoom) >> 8) & ~1;
+
+		Quad q;
+
+		q.ulX = 0;
+		q.ulY = 0;
+		q.lrX = shrinkX;
+		q.lrY = shrinkY;
+
+		setRenderBuffer(1);
+		switchRenderToBuffer(true);
+		mapZoomSpriteToQuad(feedbackSpr1, &q);
+		drawSprite(feedbackSpr1);
+
+
+		q.lrX = SCREEN_WIDTH;
+		q.lrY = SCREEN_HEIGHT;
+
+		switchRenderToBuffer(false);
+		mapFeedbackSpriteToNewFramebufferArea(0,0, shrinkX, shrinkY, 1, feedbackSpr2);
+		mapZoomSpriteToQuad(feedbackSpr2, &q);
+		drawSprite(feedbackSpr2);
+	}
+	//drawNumber(16,224, ticks);
 }
