@@ -48,16 +48,28 @@ static TextSpritesList *dentroText[16];
 static void scaleLineSprites(int offX, int offY, int zoom)
 {
 	int i;
+	Quad q;
+
 	const int sprWidth = SCREEN_WIDTH / FRAME_SUB_X;
 	const int sprHeight = 2;
 	const int lineOffY = (sprHeight * zoom) >> 8;
 	const int totalHeight = sprHeight * spriteLines;
-	const int ulX = ((SCREEN_WIDTH - ((zoom * sprWidth) >> 8)) >> 1) + offX;
-	int ulY = ((SCREEN_HEIGHT - ((zoom * totalHeight) >> 8)) >> 1) + offY;
+
+	q.ulX = ((SCREEN_WIDTH - ((zoom * sprWidth) >> 8)) >> 1) + offX;
+	q.ulY = ((SCREEN_HEIGHT - ((zoom * totalHeight) >> 8)) >> 1) + offY;
+	q.lrX = q.ulX + ((zoom * sprWidth)>>8);
 
 	for (i=0; i<spriteLines; ++i) {
-		mapZoomSpriteToQuad(feedbackLineSpr[i], ulX, ulY, ulX + ((zoom * sprWidth)>>8), ulY + lineOffY);
-		ulY += lineOffY;
+		q.lrY = q.ulY + lineOffY;
+
+		if (zoom > 256 && zoom < 512) // ugly hack
+		{
+			mapZoomSpriteToQuad(feedbackLineSpr[i], &q);
+		} else {
+			feedbackLineSpr[i]->cel->ccb_XPos = q.ulX << 16;
+			feedbackLineSpr[i]->cel->ccb_YPos = q.ulY << 16;
+		}
+		q.ulY += lineOffY;
 	}
 }
 
@@ -73,7 +85,7 @@ static void initFeedbackLineSprites()
 		if (i>0) LinkCel(feedbackLineSpr[i-1]->cel, feedbackLineSpr[i]->cel);
 	}
 
-	//scaleLineSprites(0,0,256);
+	scaleLineSprites(0,0,256);
 }
 
 void partSlimecubeInit()

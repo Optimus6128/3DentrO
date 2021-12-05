@@ -127,16 +127,16 @@ static void mapZoomRotateSprite(Sprite *spr)
 	spr->cel->ccb_YPos = (spr->posY << 16) + ((- hdy - vdy) << 8);
 }
 
-void mapZoomSpriteToQuad(Sprite *spr, int ulX, int ulY, int lrX, int lrY)
+void mapZoomSpriteToQuad(Sprite *spr, Quad *q)
 {
-	spr->cel->ccb_XPos = ulX << 16;
-	spr->cel->ccb_YPos = ulY << 16;
+	spr->cel->ccb_XPos = q->ulX << 16;
+	spr->cel->ccb_YPos = q->ulY << 16;
 
 	// Could be faster if they were power of two, but now it's a quick hack
-	spr->cel->ccb_HDX = ((lrX-ulX+1) << 20) / spr->width;
+	spr->cel->ccb_HDX = ((q->lrX - q->ulX + 1) << 20) / spr->width;
 	spr->cel->ccb_HDY = 0;
 	spr->cel->ccb_VDX = 0;
-	spr->cel->ccb_VDY = ((lrY-ulY+1) << 16) / spr->height;
+	spr->cel->ccb_VDY = ((q->lrY - q->ulY + 1) << 16) / spr->height;
 }
 
 void mapFeedbackSpriteToNewFramebufferArea(int ulX, int ulY, int lrX, int lrY, int bufferIndex, Sprite *spr)

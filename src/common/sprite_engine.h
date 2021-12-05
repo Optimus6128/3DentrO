@@ -4,6 +4,12 @@
 #include "types.h"
 #include "core.h"
 
+typedef struct Quad
+{
+	int ulX, ulY;
+	int lrX, lrY;
+}Quad;
+
 typedef struct Sprite
 {
 	int width;
@@ -32,7 +38,7 @@ void setSpritePosition(Sprite *spr, int px, int py);
 void setSpritePositionZoom(Sprite *spr, int px, int py, int zoom);
 void setSpritePositionZoomRotate(Sprite *spr, int px, int py, int zoom, int angle);
 
-void mapZoomSpriteToQuad(Sprite *spr, int ulX, int ulY, int lrX, int lrY);
+void mapZoomSpriteToQuad(Sprite *spr, Quad *q);
 void mapFeedbackSpriteToNewFramebufferArea(int ulX, int ulY, int lrX, int lrY, int bufferIndex, Sprite *spr);
 
 void *getSpriteBitmapData(Sprite *spr);
