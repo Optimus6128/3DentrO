@@ -13,6 +13,7 @@
 
 static CCB *tunnelCel;
 static CCB *tunnelWindowCel;
+static CCB *tunnelBlob;
 
 static bool isOutroInit = false;
 
@@ -77,11 +78,19 @@ static void animateTunnel(int t)
 	updateTunnelTexture(/*t>>5*/0, t>>5);	// x 4 is good, y 4 or 5
 
 	drawCels(tunnelWindowCel);
+
+	tunnelBlob->ccb_XPos = (SCREEN_WIDTH - (tunnelBlob->ccb_Width >> 1) - offX) << 16;
+	tunnelBlob->ccb_YPos = (SCREEN_HEIGHT - (tunnelBlob->ccb_Height >> 1) - offY) << 16;
+	tunnelBlob->ccb_PIXC = pixcFades[7];
+
+	drawCels(tunnelBlob);
 }
 
 void partOutroInit()
 {
 	tunnelCel = LoadCel("data/tunnel.cel", MEMTYPE_CEL);
+	tunnelBlob = LoadCel("data/tunnel_blob.cel", MEMTYPE_CEL);
+
 	tunnelWindowCel = CloneCel(tunnelCel, CLONECEL_CCB_ONLY);
 
 	saveTunnelPattern();
