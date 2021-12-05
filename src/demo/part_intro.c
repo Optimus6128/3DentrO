@@ -120,8 +120,8 @@ static void textAnimScript(int t)
 		initSecondAnim = true;
 	}
 
-	if (t > 15400 && t < 23000) {
-		updateFontAnimPos(myText1, getAnimIntervalF16(15400, 23000, t), true);
+	if (t > 15100 && t < 23000) {
+		updateFontAnimPos(myText1, getAnimIntervalF16(15100, 23000, t), true);
 	}
 
 	if (t > 3000 && t < 23000) drawSprite(myText1->chars[0]);

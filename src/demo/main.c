@@ -49,29 +49,31 @@ static void runDemo()
 	static int dt = 0;
 	int t,t0,t1;
 
-	if (startPartTicks==-1) {
-		startPartTicks = getTicks();
-	}
-	t = getTicks() - startPartTicks;
+	if (musicStatus > 0) {
+		if (startPartTicks==-1) {
+			startPartTicks = getTicks();
+		}
+		t = getTicks() - startPartTicks;
 
-	t0 = getTicks();
-	currentPartRunFunc(t,dt);
-	t1 = getTicks();
-	dt = t1-t0;
-
-	if (partIndex==PART_INTRO && t > 25000) {
-		switchPart(PART_CREDITS);
-	} else if (partIndex==PART_CREDITS && t > 35000) {
-		switchPart(PART_SLIMECUBE);
-	} else if (partIndex==PART_SLIMECUBE && t > 45000) {
-		switchPart(PART_OUTRO);
+		t0 = getTicks();
+		currentPartRunFunc(t,dt);
+		t1 = getTicks();
+		dt = t1-t0;
+		
+		if (partIndex==PART_INTRO && t > 25000) {
+			switchPart(PART_CREDITS);
+		} else if (partIndex==PART_CREDITS && t > 35000) {
+			switchPart(PART_SLIMECUBE);
+		} else if (partIndex==PART_SLIMECUBE && t > 45000) {
+			switchPart(PART_OUTRO);
+		}
 	}
 }
 
 int main()
 {
 	uint32 flags = CORE_VRAM_BUFFERS(2) | CORE_OFFSCREEN_BUFFERS(4);
-	flags |= (CORE_SHOW_FPS | CORE_SHOW_MEM | CORE_DEFAULT_INPUT);
+	//flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);
