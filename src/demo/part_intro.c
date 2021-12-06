@@ -84,7 +84,7 @@ void partIntroInit()
 	myText1 = generateTextCCBs("3DOISBACK!");
 
 	setPal(0, 0,0,0, introFontsPal);
-	setPalGradient(1,7, 1,3,11, 31,31,31, introFontsPal);
+	setPalGradient(1,7, 1,3,7, 31,29,21, introFontsPal);
 	setFontsPalette(myText1, introFontsPal);
 
 	setFontsAnimPos(FONTPOS_ORIGIN, myText1, 0, 0, 0, 24, true);
@@ -92,7 +92,7 @@ void partIntroInit()
 
 	for (i=0; i<8; ++i) {
 		const int c = i << 7;
-		int cc = c;
+		int cc = (c * 3)>>1;
 
 		setPalGradient(c,c+31, 0,0,0, 			(cc*7)>>10,	(cc*3)>>10,	(cc*23)>>10, palsAnim);
 		setPalGradientFromPrevIndex(c+32,c+63, 	(cc*2)>>10,(cc*1)>>10,	(cc*3)>>10, palsAnim);
