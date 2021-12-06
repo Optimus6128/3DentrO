@@ -80,9 +80,10 @@ void updateSineScroll(char *text, CCB **scrollParts, int t)
 	static int yOff[85];
 	int *yOffPtr = yOff;
 
+	int ii = textPosX<<2;
 	for (i=0; i<85; ++i) {
-		const int ii = i + (textPosX<<2);
-		yOff[i] = (sinF16[(ii-(t>>4)) & 255] * 24 + sinF16[(2*ii+(t>>3)) & 255] * 20 + sinF16[(12*ii+(t>>2)) & 255] * 8) >> 16;
+		yOff[i] = ((sinF16[(ii-(t>>4)) & 255] << 5) + (sinF16[((ii<<3)+(t>>2)) & 255] << 3)) >> 16;
+		++ii;
 	}
 
 	text += textPosX;
@@ -91,23 +92,24 @@ void updateSineScroll(char *text, CCB **scrollParts, int t)
 		int fontOff = fontMap[c];
 
 		if (fontOff==0) {
-			for (j=0; j<4; ++j) {
-				scrollParts[i+j]->ccb_Flags |= CCB_SKIP;
-				++yOffPtr;
-				xp+=4;
-			}
+			scrollParts[i]->ccb_Flags |= CCB_SKIP;
+			scrollParts[i+1]->ccb_Flags |= CCB_SKIP;
+			scrollParts[i+2]->ccb_Flags |= CCB_SKIP;
+			scrollParts[i+3]->ccb_Flags |= CCB_SKIP;
+			yOffPtr+=4;
+			xp+=16;
 		} else {
 			int *dstPtr = (int*)fonts->ccb_SourcePtr;
 			dstPtr += ((fontOff-1) << 1);
 			for (j=0; j<4; ++j) {
 				const int skipX = (j & 1) << 2;
 				CCB *scrollPart = scrollParts[i+j];
-				int yOff0 = *yOffPtr;
-				int yOff1 = *(yOffPtr+1);
+				const int yOff0 = *yOffPtr;
+				const int yOff1 = *(yOffPtr+1);
 
 				scrollPart->ccb_SourcePtr = (CelData*)(dstPtr + (j>>1));
 				scrollPart->ccb_PRE0 = (scrollPart->ccb_PRE0 & ~(PRE0_SKIPX_MASK)) | (skipX << PRE0_SKIPX_SHIFT);
-				scrollPart->ccb_PRE1 = (scrollPart->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | ((FONT_WIDTH/4) + skipX - 1);
+				scrollPart->ccb_PRE1 = (scrollPart->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | (4 + skipX - 1);
 				scrollPart->ccb_Flags &= ~CCB_SKIP;
 				scrollPart->ccb_XPos = (xp - (textPixelPosX & 15)) << 16;
 				scrollPart->ccb_YPos = (SCREEN_HEIGHT/2 - 8 + yOff0) << 16;

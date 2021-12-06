@@ -121,8 +121,8 @@ static void animateTunnel(int t)
 	updateTunnelTexture(t>>5, shade);
 	updateBlobTunnelPal(shade);
 
-	tunnelBlob->ccb_XPos = (SCREEN_WIDTH - (tunnelBlob->ccb_Width >> 1) - offX) << 16;
-	tunnelBlob->ccb_YPos = (SCREEN_HEIGHT - (tunnelBlob->ccb_Height >> 1) - offY) << 16;
+	tunnelBlob->ccb_XPos = (SCREEN_WIDTH - (tunnelBlob->ccb_Width >> 0) - offX) << 16;
+	tunnelBlob->ccb_YPos = (SCREEN_HEIGHT - (tunnelBlob->ccb_Height >> 0) - offY) << 16;
 	tunnelBlob->ccb_PIXC = pixcFades[7];
 
 	// We render the effect if the mosaik is active in half the screen width and height to possibly be at 60fps even when the mosaik is active
@@ -134,8 +134,8 @@ static void animateTunnel(int t)
 	}
 	tunnelWindowCel->ccb_HDX = scaleBufferX;
 	tunnelWindowCel->ccb_VDY = scaleBufferY;
-	tunnelBlob->ccb_HDX = scaleBufferX;
-	tunnelBlob->ccb_VDY = scaleBufferY;
+	tunnelBlob->ccb_HDX = (scaleBufferX << 1);
+	tunnelBlob->ccb_VDY = (scaleBufferY << 1);
 
 	drawCels(tunnelWindowCel);
 
