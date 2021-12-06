@@ -46,8 +46,8 @@ static void initParts()
 
 static void runDemo()
 {
-	static int dt = 0;
-	int t,t0,t1;
+	int t, tCurr;
+	static int tPrev = 0;
 
 	if (musicStatus > 0) {
 		if (startPartTicks==-1) {
@@ -55,10 +55,9 @@ static void runDemo()
 		}
 		t = getTicks() - startPartTicks;
 
-		t0 = getTicks();
-		currentPartRunFunc(t,dt);
-		t1 = getTicks();
-		dt = t1-t0;
+		tCurr = getTicks();
+		currentPartRunFunc(t, tCurr - tPrev);
+		tPrev = tCurr;
 		
 		if (partIndex==PART_INTRO && t > 25000) {
 			switchPart(PART_CREDITS);
@@ -73,7 +72,7 @@ static void runDemo()
 int main()
 {
 	uint32 flags = CORE_VRAM_BUFFERS(2) | CORE_OFFSCREEN_BUFFERS(4);
-	//flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
+	flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);
