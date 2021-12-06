@@ -134,8 +134,8 @@ void startMusic(char *fileName)
   	int32 Priority;
     gFileName = fileName;
 
-
-	gNumReps = 256;
+	// Play music only once (no repeat)
+	gNumReps = 1;
 
     // Get parent task Item so that thread can signal back.
 	gMainTaskItem = KernelBase->kb_CurrentTask->t.n_Item;
