@@ -11,14 +11,13 @@
 #include "sprite_engine.h"
 #include "fonts.h"
 
+#include "cel_helpers.h"
+
 static CCB *tunnelCel;
 static CCB *tunnelWindowCel;
 static CCB *tunnelBlob;
 
 static bool isOutroInit = false;
-
-static Sprite *feedbackSpr1;
-static Sprite *feedbackSpr2;
 
 static uint16 texPatternDouble[6*5*4];
 
@@ -78,15 +77,30 @@ static void animateTunnel(int t)
 	const int offX = SCREEN_WIDTH/2 + ((sinF16[(t>>5) & 255] * (SCREEN_WIDTH/2)) >> 16);
 	const int offY = SCREEN_HEIGHT/2 + ((sinF16[(t>>6) & 255] * (SCREEN_HEIGHT/2)) >> 16);
 
+	int scaleBufferX = 1 << 20;
+	int scaleBufferY = 1 << 16;
+
 	setTunnelWindow(offX, offY);
 
 	updateTunnelTexture(/*t>>5*/0, t>>5);	// x 4 is good, y 4 or 5
 
-	drawCels(tunnelWindowCel);
-
 	tunnelBlob->ccb_XPos = (SCREEN_WIDTH - (tunnelBlob->ccb_Width >> 1) - offX) << 16;
 	tunnelBlob->ccb_YPos = (SCREEN_HEIGHT - (tunnelBlob->ccb_Height >> 1) - offY) << 16;
 	tunnelBlob->ccb_PIXC = pixcFades[7];
+
+	// We render the effect if the mosaik is active in half the screen width and height to possibly be at 60fps even when the mosaik is active
+	if (mosaikZoom < 256) {
+		scaleBufferX >>= 1;
+		scaleBufferY >>= 1;
+		tunnelBlob->ccb_XPos >>= 1;
+		tunnelBlob->ccb_YPos >>= 1;
+	}
+	tunnelWindowCel->ccb_HDX = scaleBufferX;
+	tunnelWindowCel->ccb_VDY = scaleBufferY;
+	tunnelBlob->ccb_HDX = scaleBufferX;
+	tunnelBlob->ccb_VDY = scaleBufferY;
+
+	drawCels(tunnelWindowCel);
 
 	drawCels(tunnelBlob);
 }
@@ -102,8 +116,7 @@ void partOutroInit()
 
 	saveTunnelPattern();
 
-	feedbackSpr1 = newFeedbackSprite(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-	feedbackSpr2 = newFeedbackSprite(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
+	initMosaikEffect(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 
 	isOutroInit = true;
 }
@@ -121,45 +134,15 @@ static void mosaikZoomScript(int t)
 		mosaikZoom = 4;
 		sendQuit();
 	}
-
-	CLAMP(mosaikZoom,4,256)
 }
 
 void partOutroRun(int ticks, int dt)
 {
-	mosaikZoomScript(ticks);
+	mosaikZoomScript(ticks>>2);
 
-	if (mosaikZoom < 256) {
-		setRenderBuffer(0);
-		switchRenderToBuffer(true);
-	}
+	prepareForMosaikEffect(mosaikZoom);
 
 	animateTunnel(ticks);
 
-	if (mosaikZoom < 256) {
-		const int shrinkX = ((SCREEN_WIDTH*mosaikZoom) >> 8) & ~1;
-		const int shrinkY = ((SCREEN_HEIGHT*mosaikZoom) >> 8) & ~1;
-
-		Quad q;
-
-		q.ulX = 0;
-		q.ulY = 0;
-		q.lrX = shrinkX;
-		q.lrY = shrinkY;
-
-		setRenderBuffer(1);
-		switchRenderToBuffer(true);
-		mapZoomSpriteToQuad(feedbackSpr1, &q);
-		drawSprite(feedbackSpr1);
-
-
-		q.lrX = SCREEN_WIDTH;
-		q.lrY = SCREEN_HEIGHT;
-
-		switchRenderToBuffer(false);
-		mapFeedbackSpriteToNewFramebufferArea(0,0, shrinkX, shrinkY, 1, feedbackSpr2);
-		mapZoomSpriteToQuad(feedbackSpr2, &q);
-		drawSprite(feedbackSpr2);
-	}
-	//drawNumber(16,224, ticks);
+	renderMosaikEffect(mosaikZoom);
 }

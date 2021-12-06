@@ -42,9 +42,4 @@ void setPalGradient(int c0, int c1, int r0, int g0, int b0, int r1, int g1, int 
 void setPalGradientFromPrevIndex(int c0, int c1, int r1, int g1, int b1, uint16* pal);
 void drawBorderEdges(int posX, int posY, int width, int height);
 
-void setupWindowFeedbackCel(int posX, int posY, int width, int height, int bufferIndex, CCB *cel);
-
-int getCelBpp(CCB *cel);
-int getCelDataSizeInBytes(CCB *cel);
-
 #endif

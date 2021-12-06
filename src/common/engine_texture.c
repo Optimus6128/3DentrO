@@ -1,6 +1,7 @@
 #include "core.h"
 
 #include "tools.h"
+#include "cel_helpers.h"
 #include "system_graphics.h"
 #include "engine_texture.h"
 
