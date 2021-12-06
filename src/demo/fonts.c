@@ -74,7 +74,7 @@ TextSpritesList *generateTextCCBs(char *text)
 void updateSineScroll(char *text, CCB **scrollParts, int t)
 {
 	int i,j,xp=0;
-	int textPixelPosX = t >> 4;
+	int textPixelPosX = t >> 3;
 	int textPosX = textPixelPosX >> 4;
 	
 	static int yOff[85];

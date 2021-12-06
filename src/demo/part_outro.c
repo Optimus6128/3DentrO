@@ -191,8 +191,11 @@ static void mosaikZoomScript(int t)
 	}
 }
 
-static char *scrollText = "                        \
-THIS WAS 3DENTRO OR 3D(ENTR)O TO CELEBRATE 3DO!!!! ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA";
+static char *scrollText = "                            \
+THIS WAS 3DENTRO,A SMALL DEMO TO ANNOUNCE SOMETHING IS BREWING IN THE 3DO SCENE.    \
+NEW PEOPLE IN OUR DISCORD,A NEW CPP COMPILER AND NEW ODE COMING, AND MORE. HOPEFULLY MORE DEMOS TOO..    \
+GREETINGS TO TRAPEXIT,FIXEL,XPROGER,AER FIXUS,ARCHIVE 3DO,BB KRIS,VAS,BUCKETHEAD AND EVERYONE ELSE I FORGOT     \
+KEEP THE 3DO SCENE ALIVE!!!                                                                                  ";
 
 static void sineScrollScript(int t)
 {
