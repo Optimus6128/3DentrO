@@ -17,6 +17,8 @@ static CCB *tunnelCel;
 static CCB *tunnelWindowCel;
 static CCB *tunnelBlob;
 
+static uint16 origBlobPal[16];
+
 static bool isOutroInit = false;
 
 static uint16 texPatternDouble[6*5*4];
@@ -40,18 +42,45 @@ static void setTunnelWindow(int posX, int posY)
 	tunnelWindowCel->ccb_PRE1 = (tunnelWindowCel->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | (SCREEN_WIDTH + skipX - 1);
 }
 
-static void updateTunnelTexture(int offX, int offY)
+static int shade = 256;
+
+static void updateTunnelTexture(int offY, int shadeTunnel)
 {
 	int x,y;
 
-	uint16 *src = &texPatternDouble[(offY%5)*12 + (offX%6)];
+	uint16 *src = &texPatternDouble[(offY%5)*12];
 	uint16 *dst = (uint16*)tunnelWindowCel->ccb_PLUTPtr;
 	++dst;	// start from 1, finish at 30
+
+	shadeTunnel = (192 * shadeTunnel) >> 8;
+
 	for (y=0; y<5; ++y) {
 		for (x=0; x<6; ++x) {
-			*dst++ = *(src+x);
+			const int c = *(src+x);
+			const int r = (((c >> 10) & 31) * shadeTunnel) >> 8;
+			const int g = (((c >> 5) & 31) * shadeTunnel) >> 8;
+			const int b = ((c & 31) * shadeTunnel) >> 8;
+			*dst++ = (r << 10) | (g << 5) | b;
 		}
 		src+=12;
+	}
+}
+
+static void updateBlobTunnelPal(int shadeBlob)
+{
+	int i;
+	uint16 *src = origBlobPal;
+	uint16 *pal = (uint16*)tunnelBlob->ccb_PLUTPtr;
+
+	shadeBlob<<=1;
+	CLAMP(shadeBlob,0,255)
+
+	for (i=0; i<16; ++i) {
+		const int c = *src++;
+		const int r = (((c >> 10) & 31) * shadeBlob) >> 8;
+		const int g = (((c >> 5) & 31) * shadeBlob) >> 8;
+		const int b = ((c & 31) * shadeBlob) >> 8;
+		*pal++ = (r << 10) | (g << 5) | b;
 	}
 }
 
@@ -84,7 +113,8 @@ static void animateTunnel(int t)
 
 	setTunnelWindow(offX, offY);
 
-	updateTunnelTexture(/*t>>5*/0, t>>5);	// x 4 is good, y 4 or 5
+	updateTunnelTexture(t>>5, shade);
+	updateBlobTunnelPal(shade);
 
 	tunnelBlob->ccb_XPos = (SCREEN_WIDTH - (tunnelBlob->ccb_Width >> 1) - offX) << 16;
 	tunnelBlob->ccb_YPos = (SCREEN_HEIGHT - (tunnelBlob->ccb_Height >> 1) - offY) << 16;
@@ -120,6 +150,8 @@ void partOutroInit()
 
 	initMosaikEffect(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 
+	memcpy(origBlobPal, tunnelBlob->ccb_PLUTPtr, 32);
+
 	isOutroInit = true;
 }
 
@@ -131,6 +163,7 @@ static void mosaikZoomScript(int t)
 		mosaikZoom = 256;
 	} else if (t < 54000) {
 		mosaikZoom = (54000 - t) >> 5;
+		if (t>46000) shade = (54000 - t) >> 5;
 	} else {
 		// quit
 		mosaikZoom = 4;
