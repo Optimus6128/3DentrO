@@ -30,12 +30,14 @@ static int getWordOffset10(CCB *cel)
 
 static void setTunnelWindow(int posX, int posY)
 {
+	const int skipX = posX & 3;
 	int *dstPtr = (int*)tunnelCel->ccb_SourcePtr;
+
 	dstPtr += posY * getWordOffset10(tunnelCel) + (posX >> 2);
 	tunnelWindowCel->ccb_SourcePtr = (CelData*)dstPtr;
 
-	tunnelWindowCel->ccb_PRE0 = (tunnelWindowCel->ccb_PRE0 & ~(PRE0_VCNT_MASK | PRE0_SKIPX_MASK)) | (SCREEN_WIDTH << PRE0_VCNT_SHIFT) | ((posX & 3) << PRE0_SKIPX_SHIFT);
-	tunnelWindowCel->ccb_PRE1 = (tunnelWindowCel->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | (SCREEN_WIDTH - 1);
+	tunnelWindowCel->ccb_PRE0 = (tunnelWindowCel->ccb_PRE0 & ~(PRE0_VCNT_MASK | PRE0_SKIPX_MASK)) | (SCREEN_WIDTH << PRE0_VCNT_SHIFT) | (skipX << PRE0_SKIPX_SHIFT);
+	tunnelWindowCel->ccb_PRE1 = (tunnelWindowCel->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | (SCREEN_WIDTH + skipX - 1);
 }
 
 static void updateTunnelTexture(int offX, int offY)
@@ -138,7 +140,7 @@ static void mosaikZoomScript(int t)
 
 void partOutroRun(int ticks, int dt)
 {
-	mosaikZoomScript(ticks>>2);
+	mosaikZoomScript(ticks);
 
 	prepareForMosaikEffect(mosaikZoom);
 
