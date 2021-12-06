@@ -17,13 +17,18 @@ static CCB *tunnelCel;
 static CCB *tunnelWindowCel;
 static CCB *tunnelBlob;
 
+static CCB *scrollParts[84];
+
 static uint16 origBlobPal[16];
 
 static bool isOutroInit = false;
 
 static uint16 texPatternDouble[6*5*4];
 
+static uint16 sineScrollPal[16];
+
 static int mosaikZoom = 256;
+
 
 static int getWordOffset10(CCB *cel)
 {
@@ -137,8 +142,13 @@ static void animateTunnel(int t)
 	drawCels(tunnelBlob);
 }
 
+
+
 void partOutroInit()
 {
+	int i;
+	CCB *fonts = getFontsCel();
+
 	if (isOutroInit) return;
 
 	tunnelCel = LoadCel("data/tunnel.cel", MEMTYPE_CEL);
@@ -151,6 +161,16 @@ void partOutroInit()
 	initMosaikEffect(SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 
 	memcpy(origBlobPal, tunnelBlob->ccb_PLUTPtr, 32);
+
+	setPal(0, 0,0,0, sineScrollPal);
+	setPalGradient(1,7, 12,4,7, 31,21,17, sineScrollPal);
+
+	for (i=0; i<84; ++i) {
+		scrollParts[i] = CreateCel(4,16,4,CREATECEL_CODED, fonts->ccb_SourcePtr);
+		scrollParts[i]->ccb_PLUTPtr = sineScrollPal;
+		scrollParts[i]->ccb_PRE1 = (scrollParts[i]->ccb_PRE1 & ~PRE1_WOFFSET8_MASK) | (((fonts->ccb_Width >> 3) - 2) << PRE1_WOFFSET8_SHIFT);
+		if (i > 0) LinkCel(scrollParts[i-1], scrollParts[i]);
+	}
 
 	isOutroInit = true;
 }
@@ -171,6 +191,14 @@ static void mosaikZoomScript(int t)
 	}
 }
 
+static char *scrollText = "                        \
+THIS WAS 3DENTRO OR 3D(ENTR)O TO CELEBRATE 3DO!!!! ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA MALAKA";
+
+static void sineScrollScript(int t)
+{
+	updateSineScroll(scrollText, scrollParts, t);
+}
+
 void partOutroRun(int ticks, int dt)
 {
 	mosaikZoomScript(ticks);
@@ -178,6 +206,8 @@ void partOutroRun(int ticks, int dt)
 	prepareForMosaikEffect(mosaikZoom);
 
 	animateTunnel(ticks);
+
+	sineScrollScript(ticks);
 
 	renderMosaikEffect(mosaikZoom);
 }

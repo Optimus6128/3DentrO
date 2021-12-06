@@ -126,10 +126,10 @@ static void animRadial(int t)
 	static int zoom = 0;
 	static int radialFade = 0;
 
-	//int radialPosX = SCREEN_WIDTH / 2 + (SinF16(t << 10) >> 9);
-	//int radialPosY = SCREEN_HEIGHT / 2 + (SinF16(t << 11) >> 10);
-	int radialPosX = SCREEN_WIDTH / 2 + (sinF16[(t >> 6) & 255] >> 9);
-	int radialPosY = SCREEN_HEIGHT / 2 + (sinF16[(t >> 5) & 255] >> 10);
+	int radialPosX = SCREEN_WIDTH / 2 + (SinF16(t << 10) >> 9);
+	int radialPosY = SCREEN_HEIGHT / 2 + (SinF16(t << 11) >> 10);
+	//int radialPosX = SCREEN_WIDTH / 2 + (sinF16[(t >> 6) & 255] >> 9);
+	//int radialPosY = SCREEN_HEIGHT / 2 + (sinF16[(t >> 5) & 255] >> 10);
 
 
 	if (t > 2000 && t < 5000) {
@@ -141,8 +141,8 @@ static void animRadial(int t)
 		zoom = 256 - (getAnimIntervalF16(31000, 33000, t) >> 8);
 	}
 	
-	//radialFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
-	radialFade = (zoom >> 5) + (sinF16[(t >> 4) & 255] >> 14) - 3;
+	radialFade = (zoom >> 5) + (SinF16(t << 12) >> 14) - 3;
+	//radialFade = (zoom >> 5) + (sinF16[(t >> 4) & 255] >> 14) - 3;
 	CLAMP(radialFade, 0, 4)
 
 	radialSpr->cel->ccb_PIXC = pixcFades[radialFade];
