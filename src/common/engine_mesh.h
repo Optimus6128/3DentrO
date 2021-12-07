@@ -24,6 +24,7 @@ typedef struct Mesh
 	int indexNum;
 
 	QuadData *quad;
+	Vertex *normal;
 	int quadsNum;
 
 	Texture *tex;

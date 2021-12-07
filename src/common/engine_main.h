@@ -4,6 +4,7 @@
 #include "engine_mesh.h"
 
 #define MAX_VERTICES_NUM 16
+#define MAX_NORMALS_NUM 8
 
 #define PROJ_SHR 8
 #define REC_FPSHR 20

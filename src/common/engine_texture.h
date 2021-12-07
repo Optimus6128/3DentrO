@@ -30,5 +30,6 @@ Texture *initTextures(int width, int height, int bpp, int type, ubyte *bmp, uint
 Texture *initTexture(int width, int height, int bpp, int type, ubyte *bmp, uint16 *pal, ubyte numPals);
 Texture *loadTexture(char *path);
 Texture *initFeedbackTexture(int posX, int posY, int width, int height, int bufferIndex);
+void copyTexture(Texture *src, Texture *dst);
 
 #endif

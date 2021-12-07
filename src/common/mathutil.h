@@ -33,4 +33,6 @@ extern int shr[257];
 int getRand(int from, int to);
 void initMathUtil(void);
 
+void setVertex(Vertex *v, int x, int y, int z);
+
 #endif

@@ -62,6 +62,9 @@ static bool isSlimecubeInit = false;
 
 static Mesh *draculMesh;
 static Texture *draculTex;
+static Texture *boxstarTex;
+static Texture cubeTextures[2];
+
 static Sprite **feedbackLineSpr;
 
 CCB *eraseCel;
@@ -130,7 +133,10 @@ void partSlimecubeInit()
 	totalRegions = screenRegionsNum * getNumOffscreenBuffers();
 
 	draculTex = loadTexture("data/draculin64.cel");
-	draculMesh = initGenMesh(256, draculTex, MESH_OPTIONS_DEFAULT, MESH_CUBE, NULL);
+	boxstarTex = loadTexture("data/boxstar.cel");
+	copyTexture(draculTex, &cubeTextures[1]);
+	copyTexture(boxstarTex, &cubeTextures[0]);
+	draculMesh = initGenMesh(256, cubeTextures, MESH_OPTIONS_DEFAULT, MESH_CUBE, NULL);
 
 	eraseCel = CreateBackdropCel(SCREEN_WIDTH / FRAME_SUB_X, SCREEN_HEIGHT / FRAME_SUB_Y, 0, 100);
 	eraseCel->ccb_Flags |= CCB_BGND;
@@ -166,7 +172,7 @@ void partSlimecubeInit()
 
 static void renderDraculCube(int t)
 {
-	setMeshPosition(draculMesh, 0, 0, 1408);	//4x3
+	setMeshPosition(draculMesh, 0, 0, 1440);	//4x3
 	//setMeshPosition(draculMesh, 0, 0, 960);	// 2x2
 	setMeshRotation(draculMesh, t, t<<1, t>>1);
 	renderMesh(draculMesh);

@@ -32,3 +32,10 @@ void initMathUtil()
 		shr[i] = getShr(i);
 	}
 }
+
+void setVertex(Vertex *v, int x, int y, int z)
+{
+	v->x = x;
+	v->y = y;
+	v->z = z;
+}

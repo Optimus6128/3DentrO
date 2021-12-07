@@ -12,6 +12,7 @@
 
 
 static Vertex vertices[MAX_VERTICES_NUM];
+static Vertex normals[MAX_NORMALS_NUM];
 
 static int icos[256], isin[256];
 static uint32 recZ[NUM_REC_Z];
@@ -24,6 +25,18 @@ static int screenHeight = SCREEN_HEIGHT;
 static bool polygonOrderTestCPU = true;
 
 static void(*mapcelFunc)(CCB*, Point*);
+
+
+/*static int shadeTable[16] = {
+ 0x0301,0x0701,0x0B01,0x0F01,0x1301,0x1701,0x1B01,0x1F01,
+ 0x03C1,0x07C1,0x0BC1,0x0FC1,0x13C1,0x17C1,0x1BC1,0x1FC1
+};*/
+
+static int shadeTable[] = {
+	0x0000,0x0400,0x0800,0x0C00,0x1000,0x1400,0x1800,0x1C00,
+	0x00D0,0x1300,0x08D0,0x1700,0x10D0,0x1B00,0x18D0,0x1F00
+};
+
 
 
 static void fasterMapCel(CCB *c, Point *q)
@@ -114,6 +127,8 @@ static void rotateVerticesHw(Mesh *ms)
 	createRotationMatrixValues(ms->rotX, ms->rotY, ms->rotZ, (int*)rotMat);
 
 	MulManyVec3Mat33_F16((vec3f16*)vertices, (vec3f16*)ms->vrtx, rotMat, ms->vrtxNum);
+
+	MulManyVec3Mat33_F16((vec3f16*)normals, (vec3f16*)ms->normal, rotMat, ms->quadsNum);
 }
 
 static void prepareTransformedMeshCELs(Mesh *ms)
@@ -135,7 +150,11 @@ static void prepareTransformedMeshCELs(Mesh *ms)
 		}
 
 		if (!polygonOrderTestCPU || n > 0) {
+			int normZ = -normals[j].z;
+			CLAMP(normZ,0,65535)
+
 			ms->quad[j].cel->ccb_Flags &= ~CCB_SKIP;
+			ms->quad[j].cel->ccb_PIXC = shadeTable[normZ >> 12];
 			mapcelFunc(ms->quad[j].cel, quad);
 		} else {
 			ms->quad[j].cel->ccb_Flags |= CCB_SKIP;

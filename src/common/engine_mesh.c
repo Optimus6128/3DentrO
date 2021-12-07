@@ -152,6 +152,7 @@ Mesh* initMesh(int vrtxNum, int quadsNum)
 	ms->vrtx = (Vertex*)AllocMem(ms->vrtxNum * sizeof(Vertex), MEMTYPE_ANY);
 	ms->index = (int*)AllocMem(ms->indexNum * sizeof(int), MEMTYPE_ANY);
 	ms->quad = (QuadData*)AllocMem(ms->quadsNum * sizeof(QuadData), MEMTYPE_ANY);
+	ms->normal = (Vertex*)AllocMem(ms->quadsNum * sizeof(Vertex), MEMTYPE_ANY);
 
 	return ms;
 }

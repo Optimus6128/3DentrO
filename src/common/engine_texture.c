@@ -85,3 +85,8 @@ Texture *loadTexture(char *path)
 
 	return tex;
 }
+
+void copyTexture(Texture *src, Texture *dst)
+{
+	memcpy(dst, src, sizeof(Texture));
+}
