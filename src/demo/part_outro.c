@@ -17,6 +17,8 @@ static CCB *tunnelCel;
 static CCB *tunnelWindowCel;
 static CCB *tunnelBlob;
 
+static CCB *dummyFontCel;
+
 static CCB *scrollParts[84];
 
 static uint16 origBlobPal[16];
@@ -138,8 +140,6 @@ static void animateTunnel(int t)
 	tunnelBlob->ccb_VDY = (scaleBufferY << 1);
 
 	drawCels(tunnelWindowCel);
-
-	drawCels(tunnelBlob);
 }
 
 
@@ -162,6 +162,9 @@ void partOutroInit()
 
 	memcpy(origBlobPal, tunnelBlob->ccb_PLUTPtr, 32);
 
+	LinkCel(tunnelWindowCel, tunnelBlob);
+
+
 	setPal(0, 0,0,0, sineScrollPal);
 	setPalGradient(1,7, 12,4,7, 31,21,17, sineScrollPal);
 
@@ -169,13 +172,18 @@ void partOutroInit()
 		scrollParts[i] = CreateCel(4,16,4,CREATECEL_CODED, fonts->ccb_SourcePtr);
 		scrollParts[i]->ccb_PLUTPtr = sineScrollPal;
 		scrollParts[i]->ccb_PRE1 = (scrollParts[i]->ccb_PRE1 & ~PRE1_WOFFSET8_MASK) | (((fonts->ccb_Width >> 3) - 2) << PRE1_WOFFSET8_SHIFT);
+
+		scrollParts[i]->ccb_Flags &= ~CCB_LDPLUT;
+		scrollParts[i]->ccb_Flags &= ~(CCB_LDPRS | CCB_LDPPMP);
+		memcpy(&scrollParts[i]->ccb_HDDX, &scrollParts[i]->ccb_PRE0, 8);
 		if (i > 0) {
-			scrollParts[i]->ccb_Flags &= ~CCB_LDPLUT;
-			scrollParts[i]->ccb_Flags &= ~(CCB_LDPRS | CCB_LDPPMP);
-			memcpy(&scrollParts[i]->ccb_HDDX, &scrollParts[i]->ccb_PRE0, 8);
 			LinkCel(scrollParts[i-1], scrollParts[i]);
 		}
 	}
+	dummyFontCel = CreateCel(1,1,4,CREATECEL_CODED, fonts->ccb_SourcePtr);
+	dummyFontCel->ccb_PLUTPtr = sineScrollPal;
+	
+	LinkCel(dummyFontCel, scrollParts[0]);
 
 	isOutroInit = true;
 }
@@ -205,6 +213,8 @@ KEEP THE 3DO SCENE ALIVE!!!                                                     
 static void sineScrollScript(int t)
 {
 	updateSineScroll(scrollText, scrollParts, t);
+
+	drawCels(dummyFontCel);
 }
 
 void partOutroRun(int ticks, int dt)

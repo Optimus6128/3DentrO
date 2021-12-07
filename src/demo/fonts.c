@@ -122,7 +122,6 @@ void updateSineScroll(char *text, CCB **scrollParts, int t)
 			}
 		}
 	}
-	drawCels(scrollParts[0]);
 }
 
 void setFontsPalette(TextSpritesList *textSprites, uint16 *pal)

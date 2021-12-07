@@ -72,7 +72,7 @@ static void runDemo()
 int main()
 {
 	uint32 flags = CORE_VRAM_BUFFERS(2) | CORE_OFFSCREEN_BUFFERS(4);
-	flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
+	//flags |= (CORE_SHOW_FPS | /*CORE_SHOW_MEM |*/ CORE_DEFAULT_INPUT);
 
 	coreInit(initParts, flags);
 	coreRun(runDemo);
