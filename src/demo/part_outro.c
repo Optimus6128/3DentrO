@@ -169,7 +169,12 @@ void partOutroInit()
 		scrollParts[i] = CreateCel(4,16,4,CREATECEL_CODED, fonts->ccb_SourcePtr);
 		scrollParts[i]->ccb_PLUTPtr = sineScrollPal;
 		scrollParts[i]->ccb_PRE1 = (scrollParts[i]->ccb_PRE1 & ~PRE1_WOFFSET8_MASK) | (((fonts->ccb_Width >> 3) - 2) << PRE1_WOFFSET8_SHIFT);
-		if (i > 0) LinkCel(scrollParts[i-1], scrollParts[i]);
+		if (i > 0) {
+			scrollParts[i]->ccb_Flags &= ~CCB_LDPLUT;
+			scrollParts[i]->ccb_Flags &= ~(CCB_LDPRS | CCB_LDPPMP);
+			memcpy(&scrollParts[i]->ccb_HDDX, &scrollParts[i]->ccb_PRE0, 8);
+			LinkCel(scrollParts[i-1], scrollParts[i]);
+		}
 	}
 
 	isOutroInit = true;

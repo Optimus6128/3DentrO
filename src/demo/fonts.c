@@ -106,10 +106,13 @@ void updateSineScroll(char *text, CCB **scrollParts, int t)
 				CCB *scrollPart = scrollParts[i+j];
 				const int yOff0 = *yOffPtr;
 				const int yOff1 = *(yOffPtr+1);
-
+				
 				scrollPart->ccb_SourcePtr = (CelData*)(dstPtr + (j>>1));
-				scrollPart->ccb_PRE0 = (scrollPart->ccb_PRE0 & ~(PRE0_SKIPX_MASK)) | (skipX << PRE0_SKIPX_SHIFT);
-				scrollPart->ccb_PRE1 = (scrollPart->ccb_PRE1 & ~(PRE1_TLHPCNT_MASK)) | (4 + skipX - 1);
+				
+				// PRE0,PRE1 are sitting on HDDX,HDDY now, since with memset, to disable LD_PRS and LD_PPMP (stupid micro optims)
+				scrollPart->ccb_HDDX = (scrollPart->ccb_HDDX & ~(PRE0_SKIPX_MASK)) | (skipX << PRE0_SKIPX_SHIFT);
+				scrollPart->ccb_HDDY = (scrollPart->ccb_HDDY & ~(PRE1_TLHPCNT_MASK)) | (4 + skipX - 1);
+
 				scrollPart->ccb_Flags &= ~CCB_SKIP;
 				scrollPart->ccb_XPos = (xp - (textPixelPosX & 15)) << 16;
 				scrollPart->ccb_YPos = (SCREEN_HEIGHT/2 - 8 + yOff0) << 16;
