@@ -22,12 +22,12 @@ void updateMeshCELs(Mesh *ms)
 {
 	int i;
 	for (i=0; i<ms->quadsNum; i++) {
+		CCB *cel = ms->quad[i].cel;
 		Texture *tex = &ms->tex[ms->quad[i].textureId];
-
+			
 		if (tex->type & TEXTURE_TYPE_DYNAMIC) {
 			int woffset;
 			int vcnt;
-			CCB *cel = ms->quad[i].cel;
 
 			// In the future, also take account of offscreen buffer position too
 			if (tex->type & TEXTURE_TYPE_FEEDBACK) {
@@ -48,6 +48,8 @@ void updateMeshCELs(Mesh *ms)
 			cel->ccb_PRE0 = (cel->ccb_PRE0 & ~(((1<<10) - 1)<<6)) | (vcnt << 6);
 			cel->ccb_PRE1 = (cel->ccb_PRE1 & (65536 - 1024)) | (woffset << 16) | (tex->width-1);
 			cel->ccb_PLUTPtr = (uint16*)&tex->pal[ms->quad[i].palId << getPaletteColorsNum(tex->bpp)];
+		} else {
+			cel->ccb_SourcePtr = (CelData*)tex->bitmap;
 		}
 	}
 }

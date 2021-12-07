@@ -134,8 +134,8 @@ void partSlimecubeInit()
 
 	draculTex = loadTexture("data/draculin64.cel");
 	boxstarTex = loadTexture("data/boxstar.cel");
-	copyTexture(draculTex, &cubeTextures[1]);
-	copyTexture(boxstarTex, &cubeTextures[0]);
+	copyTexture(draculTex, &cubeTextures[0]);
+	copyTexture(boxstarTex, &cubeTextures[1]);
 	draculMesh = initGenMesh(256, cubeTextures, MESH_OPTIONS_DEFAULT, MESH_CUBE, NULL);
 
 	eraseCel = CreateBackdropCel(SCREEN_WIDTH / FRAME_SUB_X, SCREEN_HEIGHT / FRAME_SUB_Y, 0, 100);
@@ -220,6 +220,7 @@ static void drawPage(int page, int t, int pageOffX)
 
 static void slimecubeAnimScript(int t, int dt)
 {
+	static int hasSwitchedTexture = false;
 	int posX;
 	int posY;
 	int zoom;
@@ -236,6 +237,15 @@ static void slimecubeAnimScript(int t, int dt)
 	if (t > 7000) {
 		zoom = 512;
 	}
+	if (!hasSwitchedTexture && t > 10000) {
+		int i;
+		for (i=0; i<draculMesh->quadsNum; ++i) {
+			draculMesh->quad[i].textureId = 1;
+		}
+		updateMeshCELs(draculMesh);
+		hasSwitchedTexture = true;
+	}
+
 	if (t > 40000) {
 		posX += -((getAnimIntervalF16(40000, 43000, t) * 448) >> 16);
 	}
