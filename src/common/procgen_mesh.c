@@ -3,6 +3,7 @@
 #include "tools.h"
 #include "system_graphics.h"
 
+#include "engine_main.h"
 #include "procgen_mesh.h"
 #include "mathutil.h"
 
@@ -16,7 +17,7 @@ Mesh *initGenMesh(int size, Texture *tex, int optionsFlags, int meshgenId, void 
 	Mesh *ms;
 	
 	const int s = size / 2;
-	const int n = 65536;
+	const int n = 1 << NORMAL_SHIFT;
 
 	switch(meshgenId)
 	{

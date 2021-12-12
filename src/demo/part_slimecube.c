@@ -134,8 +134,8 @@ void partSlimecubeInit()
 
 	draculTex = loadTexture("data/draculin64.cel");
 	boxstarTex = loadTexture("data/boxstar.cel");
-	copyTexture(draculTex, &cubeTextures[0]);
-	copyTexture(boxstarTex, &cubeTextures[1]);
+	copyTexture(boxstarTex, &cubeTextures[0]);
+	copyTexture(draculTex, &cubeTextures[1]);
 	draculMesh = initGenMesh(256, cubeTextures, MESH_OPTIONS_DEFAULT, MESH_CUBE, NULL);
 
 	eraseCel = CreateBackdropCel(SCREEN_WIDTH / FRAME_SUB_X, SCREEN_HEIGHT / FRAME_SUB_Y, 0, 100);
@@ -163,8 +163,8 @@ void partSlimecubeInit()
 
 	for (i=0; i<16; ++i) {
 		int py = i & 3;
-		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 24 + py * 64, 0, 0, true);
-		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 24 + py * 64, 0, 0, false);
+		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 16 + py * 64, 0, 0, true);
+		setFontsAnimPos(FONTPOS_LINEAR, dentroText[i], 16, 16 + py * 64, 0, 0, false);
 	}
 	
 	isSlimecubeInit = true;
@@ -172,7 +172,7 @@ void partSlimecubeInit()
 
 static void renderDraculCube(int t)
 {
-	setMeshPosition(draculMesh, 0, 0, 1440);	//4x3
+	setMeshPosition(draculMesh, 0, 0, 1472);	//4x3
 	//setMeshPosition(draculMesh, 0, 0, 960);	// 2x2
 	setMeshRotation(draculMesh, t, t<<1, t>>1);
 	renderMesh(draculMesh);
@@ -237,7 +237,7 @@ static void slimecubeAnimScript(int t, int dt)
 	if (t > 7000) {
 		zoom = 512;
 	}
-	if (!hasSwitchedTexture && t > 10000) {
+	if (!hasSwitchedTexture && t > 20000) {
 		int i;
 		for (i=0; i<draculMesh->quadsNum; ++i) {
 			draculMesh->quad[i].textureId = 1;

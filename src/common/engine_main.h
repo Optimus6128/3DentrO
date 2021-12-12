@@ -10,6 +10,8 @@
 #define REC_FPSHR 20
 #define NUM_REC_Z 4096
 
+#define NORMAL_SHIFT 8
+
 void initEngine(void);
 
 void renderMesh(Mesh *ms);

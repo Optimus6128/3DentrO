@@ -23,12 +23,13 @@ static bool isCreditsInit = false;
 static uint16 creditsFontsPal[6][16];
 
 static TextSpritesList *creditsText[6];
-static char *creditsStr[6] = { "CODE", "OPTIMUS", "FONTS", "HAM", "MUSIC", "HAM" };
+static char *creditsStr[6] = { "CODE", "OPTIMUS", "GFX", "HAM & OPTIMUS", "MUSIC", "HAM" };
 
 
 void partCreditsInit()
 {
-	int i,j=0,jj=16;
+	int i,j=0;
+	static int jj[3] = {16, 144, 0};
 
 	if (isCreditsInit) return;
 
@@ -71,15 +72,13 @@ void partCreditsInit()
 	setPalGradient(1,7, 11,7,3, 27,20,11, creditsFontsPal[5]);
 
 	for (i=0; i<6; i+=2) {
-		if (i>0) {
-			jj = 0;
-			j = 1;
-		}
+		if (i>0) j = 1;
+
 		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i], -SCREEN_WIDTH/4, SCREEN_HEIGHT/8, 0, 0, true);
 		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i], SCREEN_WIDTH/10, SCREEN_HEIGHT/8, 0, 0, false);
 
 		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i+1], SCREEN_WIDTH + SCREEN_WIDTH/4, (7*SCREEN_HEIGHT)/8-16, 0, 0, true);
-		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i+1], ((5+j)*SCREEN_WIDTH)/8-jj, (7*SCREEN_HEIGHT)/8-16, 0, 0, false);
+		setFontsAnimPos(FONTPOS_LINEAR, creditsText[i+1], ((5+j)*SCREEN_WIDTH)/8-jj[i>>1], (7*SCREEN_HEIGHT)/8-16, 0, 0, false);
 	}
 
 	isCreditsInit = true;
