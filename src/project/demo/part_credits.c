@@ -88,7 +88,7 @@ static void animSky(int t)
 {
 	static int skyScale = 16 * 256;
 	const int offf = 3500;
-	int pixI;
+	int pixI = 0;
 
 	if (t < 256) {
 		pixI = t>>5;

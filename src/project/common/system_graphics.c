@@ -59,7 +59,7 @@ static bool testIfTotalBuffersFitInVRAM(uint32 totalNumBuffers)
 void initGraphics(uint32 numVramBuffers, uint32 numOffscreenBuffers, bool horizontalAntialiasing, bool verticalAntialiasing)
 {
 	int i;
-	uint32 totalBuffersNum;
+	int totalBuffersNum;
 
 	screenPage = 0;
 	frameNum = 0;
@@ -178,7 +178,7 @@ void switchRenderToBuffer(bool on)
 	renderToBuffer = on;
 }
 
-void setRenderBuffer(uint32 num)
+void setRenderBuffer(int num)
 {
 	if (num > offscreenBuffersNum-1) num = offscreenBuffersNum-1;
 
@@ -187,7 +187,7 @@ void setRenderBuffer(uint32 num)
 
 void clearAllBuffers()
 {
-	const uint32 totalBuffersNum = vramBuffersNum + offscreenBuffersNum;
+	const int totalBuffersNum = vramBuffersNum + offscreenBuffersNum;
 	int i;
 
 	for(i=0; i<totalBuffersNum; ++i) {

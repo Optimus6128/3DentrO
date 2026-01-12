@@ -1,33 +1,17 @@
-#define ENABLE_SOUND	1
+#define ENABLE_SOUND
+
 #include "types.h"
-#include "mem.h"
 #include "audio.h"
-#include "debug3do.h"
-#include "effectshandler.h"
-#include "event.h"
-#include "nodes.h"
-#include "kernelnodes.h"
-
-/* added for spoolsound */
-#include "debug.h"
-#include "operror.h"
-#include "filefunctions.h"
 #include "music.h"
+#include "task.h"
 
-#define	DBUG(x)	/* PRT(x) */
-
-#define     MAXVOICES   8
-#define     NUMVOICES   8
-#define     NUMCHANNELS 8
-#define     NUMSAMPLERS 8
-#define     MAXAMPLITUDE MAXDSPAMPLITUDE
-#define     MAX_PITCH   60
-#define     PITCH_RANGE 40
-
-int32 PlaySoundFile (char *FileName, int32 BufSize, int32 NumReps);
-void SpoolSoundFileThread( void );
-
-int musicStatus = 0;
+#define		MAXVOICES   8
+#define		NUMVOICES   8
+#define		NUMCHANNELS 8
+#define		NUMSAMPLERS 8
+#define		MAXAMPLITUDE MAXDSPAMPLITUDE
+#define		MAX_PITCH   60
+#define		PITCH_RANGE 40
 
 /*
 ** Allocate enough space so that you don't get stack overflows.
@@ -37,22 +21,11 @@ int musicStatus = 0;
 */
 #define STACKSIZE (10000)
 
-#define CHECKPTR(val,name) \
-	if (val == 0) \
-	{ \
-		Result = -1; \
-		ERR(("Failure in %s\n", name)); \
-		goto error; \
-	}
-
-#define	DBUG(x)	/* PRT(x) */
-
 #define NUMBLOCKS (64)
 #define BLOCKSIZE (2048)
 #define BUFSIZE (NUMBLOCKS*BLOCKSIZE)
 #define NUMBUFFS  (2)
 //#define MAXAMPLITUDE (0x7FFF)
-
 
 
 /********* Globals for Thread **********/
@@ -61,96 +34,87 @@ static int32 gSignal1;
 static Item gMainTaskItem;
 static int32 gNumReps;
 static Item SpoolerThread;
+static SoundFilePlayer *sfp;
 
-
+#ifdef PROJECT_3DO
+	int musicStatus = 0;
+#else
+	int musicStatus = 1;	// just to bootstart the main demo animation for now
+#endif
 
 
 /**************************************************************************
 ** Entry point for background thread.
 **************************************************************************/
-void SpoolSoundFileThread( void )
-{
-	int32 Result;
-
-	// Initialize audio, return if error.
-	if (OpenAudioFolio())
-	{
-		ERR(("Audio Folio could not be opened!\n"));
-	}
-
-	Result = PlaySoundFile ( gFileName, BUFSIZE, gNumReps);
-	SendSignal( gMainTaskItem, gSignal1 );
-
-	CloseAudioFolio();
-	WaitSignal(0);   // Waits forever. Don't return!
-
-}
 
 int32 PlaySoundFile (char *FileName, int32 BufSize, int32 NumReps)
 {
-	int32 Result=0;
-	SoundFilePlayer *sfp;
 	int32 SignalIn, SignalsNeeded;
 	int32 LoopCount;
 
-
-	for( LoopCount = 0; LoopCount < NumReps; LoopCount++)
-	{
-		PRT(("Loop #%d\n", LoopCount));
-
+	for(LoopCount = 0; LoopCount < NumReps; LoopCount++) {
 		sfp = OpenSoundFile(FileName, NUMBUFFS, BufSize);
-		CHECKPTR(sfp, "OpenSoundFile");
-		Result = StartSoundFile( sfp, MAXAMPLITUDE );
-		CHECKRESULT(Result,"StartSoundFile");
+		StartSoundFile( sfp, MAXAMPLITUDE );
 
-/* Keep playing until no more samples. */
+		// Keep playing until no more samples
 		SignalIn = 0;
 		SignalsNeeded = 0;
 
-		do
-		{
-		    ++musicStatus;
+		do {
+			++musicStatus;
 			if (SignalsNeeded) SignalIn = WaitSignal(SignalsNeeded);
-			Result = ServiceSoundFile(sfp, SignalIn, &SignalsNeeded);
-			CHECKRESULT(Result,"ServiceSoundFile");
+			ServiceSoundFile(sfp, SignalIn, &SignalsNeeded);
 		} while (SignalsNeeded);
 
-		Result = StopSoundFile (sfp);
-		CHECKRESULT(Result,"StopSoundFile");
-
-	Result = CloseSoundFile (sfp);
-	CHECKRESULT(Result,"CloseSoundFile");
-
+		StopSoundFile(sfp);
+		CloseSoundFile(sfp);
 	}
-
 	return 0;
-
-error:
-	return (Result);
 }
+
+void SpoolSoundFileThread( void )
+{
+	// Even if we do this in core init, we need to do it again here else the music won't work. Probably because this is a separate thread?
+	OpenAudioFolio();
+
+	PlaySoundFile(gFileName, BUFSIZE, gNumReps);
+	SendSignal(gMainTaskItem, gSignal1);
+
+	CloseAudioFolio();
+	WaitSignal(0); // Waits forever. Don't return!
+}
+
 
 void startMusic(char *fileName)
 {
-  	int32 Priority;
-    gFileName = fileName;
+	const int32 Priority = 180;
+	gFileName = fileName;
 
-	// Play music only once (no repeat)
-	gNumReps = 1;
+	// Play music very long
+	gNumReps = 16777216;
 
-    // Get parent task Item so that thread can signal back.
+	// Get parent task Item so that thread can signal back.
+#ifdef PROJECT_3DO
 	gMainTaskItem = KernelBase->kb_CurrentTask->t.n_Item;
+#endif
 
-    // Allocate a signal for each thread to notify parent task.
+	// Allocate a signal for each thread to notify parent task.
 	gSignal1 = AllocSignal(0);
-	CHECKRESULT(gSignal1,"AllocSignal");
 
-	Priority = 180;
+#ifdef PROJECT_3DO
 	SpoolerThread = CreateThread("SoundSpooler", Priority, SpoolSoundFileThread, STACKSIZE);
-	CHECKRESULT(SpoolerThread,"CreateThread");
+#endif
 }
 
 void endMusic()
 {
+	StopSoundFile(sfp);
+	CloseSoundFile(sfp);
+
+	FreeSignal(gSignal1);
+#ifdef PROJECT_3DO
 	DeleteThread( SpoolerThread );
+#endif
+
 	CloseAudioFolio();
 }

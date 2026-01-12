@@ -37,6 +37,6 @@ uint32 getNumVramBuffers(void);
 uint32 getNumOffscreenBuffers(void);
 
 void switchRenderToBuffer(bool on);
-void setRenderBuffer(uint32 num);
+void setRenderBuffer(int num);
 
 #endif

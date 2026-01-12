@@ -126,7 +126,7 @@ static void textAnimScript(int t)
 
 	if (t > 3000 && t < 23000) drawSprite(myText1->chars[0]);
 
-	if (t > 23000 & t < 25000) {
+	if (t > 23000 && t < 25000) {
 		fadeOutVal = (t - 23000) >> 8;
 	}
 }
