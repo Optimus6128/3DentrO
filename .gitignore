@@ -1,3 +1,7 @@
 LaunchMe
 *.iso
 *.o
+.vs
+bin
+obj
+*.db

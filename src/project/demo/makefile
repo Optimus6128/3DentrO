@@ -1,7 +1,7 @@
 3DODEV	= C:/3DODev/
 ARMDEV	= C:/ARM251/
 COMMON_DIR	= ../common/
-CD_DIR	= ../../CD/
+CD_DIR	= ../../../CD/
 
 # Project specific settings
 NAME	= $(notdir $(CURDIR))

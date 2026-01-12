@@ -1,2 +1,2 @@
-cd src/demo
+cd src/project/demo
 call clean.bat
