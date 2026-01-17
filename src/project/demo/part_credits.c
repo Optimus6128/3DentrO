@@ -88,7 +88,7 @@ static void animSky(int t)
 {
 	static int skyScale = 16 * 256;
 	const int offf = 3500;
-	int pixI = 0;
+	static int pixI = 0;
 
 	if (t < 256) {
 		pixI = t>>5;
@@ -113,7 +113,7 @@ static void animSky(int t)
 		skyCel->ccb_YPos = ((((SCREEN_HEIGHT/2) << 8) - skyScale * (SCREEN_HEIGHT/2)) << 8);
 		skyCel->ccb_VDY = skyScale << 8;
 
-		CLAMP(pixI,0,8)
+		CLAMP(pixI, 0, 8)
 		skyCel->ccb_PIXC = pixcFades[pixI];
 
 		drawCels(skyCel);
