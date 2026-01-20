@@ -90,8 +90,8 @@ void startMusic(char *fileName)
 	const int32 Priority = 180;
 	gFileName = fileName;
 
-	// Play music very long
-	gNumReps = 16777216;
+	// Play music only once then stop
+	gNumReps = 1;
 
 	// Get parent task Item so that thread can signal back.
 #ifdef PROJECT_3DO

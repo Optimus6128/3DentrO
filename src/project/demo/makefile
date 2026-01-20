@@ -58,4 +58,4 @@ clean:
 	RM -f $(CD_DIR)../demo.iso
 
 copy:
-	CP $(NAME) $(CD_DIR)LaunchMe
+	copy $(NAME) "$(CD_DIR)LaunchMe"
