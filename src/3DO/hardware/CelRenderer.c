@@ -1,5 +1,7 @@
 #include "CelRenderer.h"
 
+#include <stdio.h>
+
 typedef struct CelPoint
 {
 	int x, y;
@@ -529,7 +531,7 @@ static void renderCelGridTexels(uint16* vramDst, int width, int height, int orde
 	for (y=0; y<height; ++y) {
 		for (x = 0; x < width; ++x) {
 			if (!(celGridSrc->colorInfo & DISCARD_PIXEL)) {
-				const uint16 color = celGridSrc->colorInfo & 65535;
+				uint16 color = celGridSrc->colorInfo & 65535;
 				if (!(color == 0 && info->opaque && info->transparentRGB0)) {
 					CelPoint* p0 = &celGridSrc[0];
 					CelPoint* p1 = &celGridSrc[1];
@@ -701,7 +703,7 @@ static void renderCelSprite(CCB* cel, uint16* vramDst, CelRenderInfo *info)
 				for (x = 0; x < width; ++x) {
 					const int xp = posX + x;
 					if (xp >= 0 && xp < SCREEN_W) {
-						const uint32 colorInfo = *bitmapLinePtr++;
+						const uint32 colorInfo = bitmapLinePtr[x];
 						if (!(colorInfo & DISCARD_PIXEL)) {
 							const uint16 color = colorInfo & 65535;
 							const int offset = VRAM_OFS(xp, yp);
@@ -710,6 +712,7 @@ static void renderCelSprite(CCB* cel, uint16* vramDst, CelRenderInfo *info)
 					}
 				}
 			}
+			bitmapLinePtr += width;
 		}
 		src += woffset;
 	}
